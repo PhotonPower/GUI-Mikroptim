@@ -1,8 +1,8 @@
-"""Seite „Jobs und Synthese“: Protokolle von synth (G4-T2), Jobs folgen (G4-T1, G4-T3)."""
+"""Seite „Jobs und Synthese“: Protokolle von synth (G4-T2), Jobs (G4-T1)."""
 
 import streamlit as st
 
-from gui_mikroptim.views import common, file_picker, synth_view
+from gui_mikroptim.views import common, file_picker, jobs_view, synth_view
 
 cfg = common.settings_or_stop()
 st.title("Jobs und Synthese")
@@ -25,10 +25,8 @@ with tab_protocols:
         synth_view.render(entry.path, key="synthese")
 
 with tab_jobs:
-    st.info("Hier laufen Synthese und andere lange Rechnungen als eigene Prozesse (ADR-0003).")
-    st.markdown(
-        "**Geplante Aufgaben** (docs/plan/meilensteine.md):\n"
-        "- `G4-T1` Jobverwaltung: starten, Status, Ausgabe, abbrechen\n"
-        "- `G4-T3` Synthese-Job mit Formular für mikroptim synth\n"
-        "- `G4-T4` Ergebnisordner von Läufen durchsehen"
+    jobs_view.render(cfg)
+    st.caption(
+        "Als Nächstes (docs/plan/meilensteine.md): `G4-T3` Synthese-Job mit Formular, "
+        "`G4-T4` Ergebnisordner von Läufen."
     )

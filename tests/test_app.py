@@ -104,3 +104,36 @@ def test_evaluation_page_without_mikroptim(app_file: Path, workspace: Path, with
     at = _run(app_file, "pages/auswertung.py")
     assert at.title[0].value == "Auswertung"
     assert any("Mikroptim ist nicht nutzbar" in w.value for w in at.warning)
+
+
+def test_jobs_tab(app_file: Path, workspace: Path, without_mikroptim):
+    import sys
+    import time
+
+    from gui_mikroptim.backend import jobs
+
+    done = jobs.submit(workspace, "test", [sys.executable, "-c", "print('fertig')"], 1)
+    deadline = time.monotonic() + 30
+    while not jobs.load(done.path).final and time.monotonic() < deadline:
+        time.sleep(0.1)
+    long = jobs.submit(workspace, "test", [sys.executable, "-c", "import time; time.sleep(60)"], 2)
+    try:
+        at = _run(app_file, "pages/synthese.py")
+        assert any(m.label == "laufend" and m.value == "1 / 1" for m in at.metric)
+        table = at.dataframe[-1].value
+        assert set(table["Job"]) == {done.id, long.id}
+        box = at.selectbox(key="jobs.auswahl")
+        assert box.value == long.id  # neuester zuerst
+        assert any(long.id in c.value or "time.sleep(60)" in c.value for c in at.code)
+        at.button(key=f"jobs.abbrechen.{long.id}").click().run()
+        assert not at.exception, [e.value for e in at.exception]
+        deadline = time.monotonic() + 20
+        while not jobs.load(long.path).final and time.monotonic() < deadline:
+            time.sleep(0.1)
+        assert jobs.load(long.path).status == jobs.CANCELLED
+        box = at.selectbox(key="jobs.auswahl")
+        box.set_value(done.id).run()
+        assert not [b for b in at.button if b.key == f"jobs.abbrechen.{done.id}"]
+        assert any("fertig" in c.value for c in at.code)
+    finally:
+        jobs.cancel(workspace, long.id)
