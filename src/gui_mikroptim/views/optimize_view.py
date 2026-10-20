@@ -185,6 +185,9 @@ def run_section(cfg, entry: FileEntry, system: Any, options: OptimizeOptions) ->
         for placeholder in placeholders:
             placeholder.empty()
 
+    saved = st.session_state.pop(f"{KEY}.gespeichert", None)
+    if saved:
+        st.success(saved)  # vor der Prüfung: nach der Übernahme gehört das Ergebnis zur alten Datei
     state = st.session_state.get(RUN_STATE)
     if state is None:
         return
@@ -221,6 +224,8 @@ def _show_outcome(cfg, entry, options, state, merit_history_figure) -> None:
         )
         for warning in result.warnings:
             st.warning(warning)
+        _before_after(entry, options, result)
+        _save(cfg, entry, result)
     elif status == optimize_run.TIME_LIMIT:
         st.warning(
             f"Zeitgrenze erreicht nach {len(history)} Zyklen; das System ist unverändert. "
@@ -245,3 +250,86 @@ def _show_outcome(cfg, entry, options, state, merit_history_figure) -> None:
         st.error(state.get("note") or "Fehler")
     if history:
         st.plotly_chart(merit_history_figure(history), width="stretch", key=f"{KEY}.verlauf")
+
+
+# --- Ergebnis: Vorher/Nachher und Speichern (G3-T3) --------------------------------------------
+
+
+def _before_after(entry: FileEntry, options: OptimizeOptions, result: Any) -> None:
+    """RMS-Wellenfront vorher (Datei) und nachher (``result.system``) mit derselben Quadratur."""
+    from gui_mikroptim.backend import compare
+    from gui_mikroptim.views.system_view import cached_system
+    from gui_mikroptim.views.wavefront_plots import (
+        field_labels,
+        rms_difference_heatmap,
+        wavelength_labels,
+    )
+
+    trace = compute.TraceOptions(options.rings, options.spokes, options.gpu, options.device)
+    try:
+        before_system = cached_system(str(entry.path), entry.mtime, entry.size)
+        before = compute.trace_wavefront(before_system, trace)
+        after = compute.trace_wavefront(result.system, trace)
+    except Exception as exc:  # z. B. afokal
+        error = compute.load_error(exc)
+        st.warning(f"Wellenfront vorher/nachher nicht verfügbar: {error.kind}: {error.message}")
+        return
+    st.markdown(
+        f"**RMS-Wellenfront vorher → nachher** (Wellen bei λ_ref, {trace.rings} × {trace.spokes})"
+    )
+    finite = lambda a: a[a == a]  # noqa: E731 - NaN entfernen
+    c1, c2 = st.columns(2)
+    b, a = finite(before.rms_waves), finite(after.rms_waves)
+    c1.metric("RMS max vorher", f"{b.max():.4g}" if b.size else "–")
+    c2.metric(
+        "RMS max nachher",
+        f"{a.max():.4g}" if a.size else "–",
+        delta=f"{a.max() - b.max():+.4g}" if a.size and b.size else None,
+        delta_color="inverse",
+    )
+    diff = compare.rms_difference(before, after)
+    st.plotly_chart(
+        rms_difference_heatmap(
+            diff,
+            field_labels(diff.shape[0], before_system.field_angles_deg),
+            wavelength_labels(before_system.wavelengths_nm, before_system.reference_nm),
+        ),
+        width="stretch",
+        key=f"{KEY}.vorher_nachher",
+    )
+    with st.expander("Tabelle vorher/nachher"):
+        st.dataframe(
+            compare.rms_compare_rows(
+                before, after, before_system.field_angles_deg, before_system.wavelengths_nm
+            ),
+            hide_index=True,
+            width="stretch",
+        )
+
+
+def _save(cfg, entry: FileEntry, result: Any) -> None:
+    from gui_mikroptim.backend import optimize_run
+    from gui_mikroptim.views import current, file_picker
+
+    st.markdown("**Ergebnis speichern**")
+    c1, c2, c3 = st.columns([3, 2, 1])
+    name = c1.text_input(
+        "Dateiname unter ergebnisse/",
+        value=optimize_run.default_result_name(entry.path),
+        key=f"{KEY}.dateiname",
+    )
+    adopt = c2.checkbox("als aktuelles System übernehmen", value=True, key=f"{KEY}.uebernehmen")
+    if c3.button("Speichern", key=f"{KEY}.speichern"):
+        try:
+            target = optimize_run.save_result(result, cfg.workspace, name)
+        except Exception as exc:
+            error = compute.load_error(exc)
+            st.error(f"Nicht gespeichert: {error.kind}: {error.message}")
+            return
+        text = f"Gespeichert als ergebnisse/{target.name}; die Eingabe bleibt unverändert."
+        if adopt:
+            current.set_path(target)
+            file_picker.select_on_next_run(KEY, target, remember=True)
+            text += " Jetzt aktuelles System."
+        st.session_state[f"{KEY}.gespeichert"] = text
+        st.rerun()

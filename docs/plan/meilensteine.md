@@ -81,7 +81,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ---
 
-## G3 – Optimierung
+## G3 – Optimierung ✅
 
 ### G3-T1 – Variablen und Optionen ✅
 - **Abhängig von:** G1-T2
@@ -93,7 +93,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** `optimize(..., callback=...)`; Merit-Verlauf (log) und aktueller Zyklus live; Knopf „Abbrechen“ über Ausnahme im Rückruf; Laufzeitgrenze, danach Hinweis auf Job (G4).
 - **Abnahme:** Ergebnis identisch zu `mikroptim optimize` mit denselben Optionen (Merit bitgleich, Test auf `einzellinse_bk7_biegung.json`); Abbruch hinterlässt einen nutzbaren Zustand und eine Meldung.
 
-### G3-T3 – Ergebnis und Speichern
+### G3-T3 – Ergebnis und Speichern ✅
 - **Abhängig von:** G3-T2
 - **Inhalt:** Vorher/Nachher (Variablen, Merit, RMS-Wellenfront); Speichern über `OptimizeResult.system.save` unter `ergebnisse/` (neuer Name, nie Überschreiben); Ergebnis direkt als aktuelle Datei übernehmen.
 - **Abnahme:** gespeicherte Datei lädt mit `mikroptim trace` und reproduziert die Endmerit (Test); Eingabedatei unverändert (Hash vorher/nachher).
