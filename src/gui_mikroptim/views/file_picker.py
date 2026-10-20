@@ -81,6 +81,23 @@ def _entry_index(entries: list[FileEntry], path: Path | None) -> int:
     return 0
 
 
+def select_on_next_run(key: str, path: Path, remember: bool, message: str | None = None) -> None:
+    """Wählt ``path`` beim nächsten Lauf aus (nach Upload oder neu gespeicherter Datei).
+
+    Liest die Dateilisten neu und setzt die Zustände der Auswahl-Widgets zurück, damit die
+    Vorauswahl greift. Der Aufrufer startet danach ``st.rerun()``.
+    """
+    _documents.clear()
+    st.session_state.pop(f"{key}.quelle", None)
+    for widget_key in [k for k in st.session_state if str(k).startswith(f"{key}.datei.")]:
+        st.session_state.pop(widget_key, None)
+    st.session_state[f"{key}.gewaehlt"] = str(path)
+    if remember:
+        current.set_path(path)
+    if message:
+        st.session_state[f"{key}.meldung"] = message
+
+
 def _upload_box(cfg: Settings, names: tuple[str, ...], key: str, remember: bool) -> None:
     counter_key = f"{key}.upload_nr"
     counter = st.session_state.get(counter_key, 0)
@@ -97,17 +114,11 @@ def _upload_box(cfg: Settings, names: tuple[str, ...], key: str, remember: bool)
     except uploads.UploadError as exc:
         st.error(f"Upload abgelehnt: {exc}")
         return
-    # Neue Datei auswählen: Liste neu lesen, Widget-Zustände der Auswahl zurücksetzen
-    _documents.clear()
-    for suffix in (".quelle", ".upload." + str(counter)):
-        st.session_state.pop(key + suffix, None)
-    for widget_key in [k for k in st.session_state if str(k).startswith(f"{key}.datei.")]:
-        st.session_state.pop(widget_key, None)
+    st.session_state.pop(f"{key}.upload.{counter}", None)
     st.session_state[counter_key] = counter + 1
-    st.session_state[f"{key}.gewaehlt"] = str(result.path)
-    if remember:
-        current.set_path(result.path)
-    st.session_state[f"{key}.meldung"] = f"Gespeichert als {result.path.name} ({result.format})."
+    select_on_next_run(
+        key, result.path, remember, f"Gespeichert als {result.path.name} ({result.format})."
+    )
     st.rerun()
 
 
