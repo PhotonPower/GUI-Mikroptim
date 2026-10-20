@@ -48,3 +48,17 @@ def _clear_streamlit_caches():
     yield
     st.cache_resource.clear()
     st.cache_data.clear()
+
+
+def _apptest_supports_uploader() -> bool:
+    from streamlit.testing.v1 import element_tree
+
+    return hasattr(element_tree, "FileUploader")
+
+
+#: Ältere Streamlit-Versionen (z. B. 1.51) kennen ``st.file_uploader`` in AppTest nicht und
+#: scheitern bei jeder Interaktion auf Seiten mit Upload. Die App selbst ist nicht betroffen.
+needs_uploader = pytest.mark.skipif(
+    not _apptest_supports_uploader(),
+    reason="AppTest dieser Streamlit-Version unterstützt st.file_uploader nicht",
+)

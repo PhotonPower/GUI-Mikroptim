@@ -31,7 +31,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ## G1 – System
 
-### G1-T1 – Dateiauswahl und Upload
+### G1-T1 – Dateiauswahl und Upload ✅
 - **Abhängig von:** G0
 - **Inhalt:** Baustein `views/file_picker.py`: Quelle wählen (Beispielsysteme aus `MKO_GUI_MIKROPTIM_REPO/data/systems`, `uploads/`, `ergebnisse/`, später Jobordner), Datei aus `files.list_files` wählen, Upload nach `uploads/` über `files.write_new_file`. Format vorab mit `protocols.load_document` prüfen. Auswahl in `st.session_state["aktuell.datei"]` (seitenübergreifend).
 - **Abnahme:**
@@ -45,6 +45,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Abnahme:**
   - Für `einzellinse_bk7.json` zeigt die Seite f ≈ 101,05 mm und Schnittweite ≈ 99,05 mm, Werte identisch zu `mikroptim trace --json` (Test vergleicht mit `run_cli`).
   - Ein System mit Formatfehler zeigt die Meldung mit JSON-Pfad (`FormatError.json_path`), ohne Ausnahme der App.
+  - Glaskataloge hochgeladener Dateien: Mikroptim sucht `glass_catalogs` vom Verzeichnis der Datei aus aufwärts, Dateien in `uploads/` finden Kataloge wie `data/glass/basis.json` also nicht. Lösung ohne eigene Pfadlogik: Kann `load_system` die Kataloge nicht finden, bietet die Seite an, die Datei mit `System.from_json(text, base_dir=<Mikroptim-Checkout>)` zu laden und mit `System.save()` als neue Datei unter `uploads/` zu speichern (Mikroptim schreibt die Katalogpfade relativ zur neuen Datei). Test mit einer hochgeladenen Kopie von `einzellinse_bk7.json`.
   - Alle Beispielsysteme in `data/systems` laden ohne Ausnahme der App (parametrisierter Integrationstest).
 
 ### G1-T3 – Linsenschnitt

@@ -14,6 +14,7 @@ with tab_protocols:
         cfg,
         ("mikroptim.synth",),
         key="synthese.protokoll",
+        allow_upload=True,
         empty_hint=(
             "Protokolle entstehen mit `mikroptim synth … --log datei.json`. Sie werden im "
             "Arbeitsbereich und, mit MKO_GUI_MIKROPTIM_REPO, unter docs/ergebnisse und data "

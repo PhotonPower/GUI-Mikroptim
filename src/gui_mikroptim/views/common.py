@@ -6,6 +6,7 @@ import streamlit as st
 
 from gui_mikroptim.backend import mko
 from gui_mikroptim.config import ConfigError, Settings, load_settings
+from gui_mikroptim.views import current
 
 
 @st.cache_resource(show_spinner=False)
@@ -44,8 +45,12 @@ def require_mikroptim() -> mko.MikroptimStatus:
     return status
 
 
-def sidebar(version: str) -> None:
-    """Seitenleiste: Version der GUI und Kurzstatus von Mikroptim."""
+def sidebar(version: str):
+    """Seitenleiste: Version der GUI und Kurzstatus von Mikroptim.
+
+    Gibt einen Platzhalter für das aktuelle System zurück; :func:`sidebar_current` füllt ihn
+    nach dem Lauf der Seite, damit eine Auswahl auf der Seite sofort erscheint.
+    """
     with st.sidebar:
         status = mikroptim_status()
         if status.available:
@@ -53,7 +58,18 @@ def sidebar(version: str) -> None:
             st.caption(f"Mikroptim {status.version}{gpu}")
         else:
             st.caption("Mikroptim: nicht verfügbar")
+        placeholder = st.empty()
         st.caption(f"GUI-Mikroptim {version}")
+    return placeholder
+
+
+def sidebar_current(placeholder) -> None:
+    """Zeile „Aktuelles System“ in der Seitenleiste."""
+    try:
+        path = current.get_path(settings())
+    except ConfigError:
+        path = None
+    placeholder.caption(f"Aktuelles System: {path.name if path else '–'}")
 
 
 def planned(title: str, tasks: list[tuple[str, str]], intro: str) -> None:

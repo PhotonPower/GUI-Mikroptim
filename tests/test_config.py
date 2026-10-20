@@ -48,3 +48,12 @@ def test_cli_path_and_missing_program(tmp_path: Path):
     assert load_settings({"MKO_GUI_CLI": str(exe)}).cli == exe.resolve()
     with pytest.raises(ConfigError, match="MKO_GUI_CLI"):
         load_settings({"MKO_GUI_CLI": "gibt-es-sicher-nicht-12345"})
+
+
+def test_read_roots(tmp_path: Path):
+    cfg = load_settings({"MKO_GUI_WORKSPACE": str(tmp_path / "ws")})
+    assert cfg.read_roots == [(tmp_path / "ws").resolve()]
+    cfg = load_settings(
+        {"MKO_GUI_WORKSPACE": str(tmp_path / "ws"), "MKO_GUI_MIKROPTIM_REPO": str(tmp_path / "r")}
+    )
+    assert cfg.read_roots == [(tmp_path / "ws").resolve(), (tmp_path / "r").resolve()]

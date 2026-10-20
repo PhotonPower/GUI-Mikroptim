@@ -52,6 +52,14 @@ class Settings:
         path = self.mikroptim_repo / "data" / "systems"
         return path if path.is_dir() else None
 
+    @property
+    def read_roots(self) -> list[Path]:
+        """Wurzeln, aus denen die GUI lesen darf: Arbeitsbereich und Mikroptim-Checkout."""
+        roots = [self.workspace]
+        if self.mikroptim_repo is not None:
+            roots.append(self.mikroptim_repo)
+        return roots
+
     def ensure_workspace(self) -> None:
         """Legt den Arbeitsbereich und seine Unterverzeichnisse an."""
         for name in WORKSPACE_SUBDIRS:

@@ -73,30 +73,42 @@ def parse_format(value: Any) -> FormatId | None:
     return FormatId(name, int(major_digits))
 
 
-def load_document(path: Path) -> tuple[FormatId, dict[str, Any]]:
-    """Lädt eine JSON-Datei von Mikroptim und prüft das Format.
+def parse_document_text(text: str, source: str) -> tuple[FormatId, dict[str, Any]]:
+    """Prüft JSON-Text eines Mikroptim-Dokuments; ``source`` erscheint in Fehlermeldungen.
 
     Raises:
         ProtocolError: kein JSON-Objekt, kein ``format``-Feld, unbekanntes Format oder
             nicht unterstützte Hauptversion.
     """
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise ProtocolError(f"{path.name}: nicht lesbar: {exc}") from exc
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ProtocolError(f"{source}: nicht lesbar: {exc}") from exc
     if not isinstance(data, dict):
-        raise ProtocolError(f"{path.name}: kein JSON-Objekt")
+        raise ProtocolError(f"{source}: kein JSON-Objekt")
     fmt = parse_format(data.get("format"))
     if fmt is None:
-        raise ProtocolError(f"{path.name}: Feld 'format' fehlt oder ist ungültig")
+        raise ProtocolError(f"{source}: Feld 'format' fehlt oder ist ungültig")
     if fmt.name not in KNOWN_FORMATS:
-        raise ProtocolError(f"{path.name}: unbekanntes Format {fmt}")
+        raise ProtocolError(f"{source}: unbekanntes Format {fmt}")
     if fmt.major != SUPPORTED_MAJOR[fmt.name]:
         raise ProtocolError(
-            f"{path.name}: Hauptversion {fmt.major} von {fmt.name} wird nicht unterstützt "
+            f"{source}: Hauptversion {fmt.major} von {fmt.name} wird nicht unterstützt "
             f"(erwartet {SUPPORTED_MAJOR[fmt.name]})"
         )
     return fmt, data
+
+
+def load_document(path: Path) -> tuple[FormatId, dict[str, Any]]:
+    """Lädt eine JSON-Datei von Mikroptim und prüft das Format.
+
+    Siehe :func:`parse_document_text`.
+    """
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ProtocolError(f"{path.name}: nicht lesbar: {exc}") from exc
+    return parse_document_text(text, path.name)
 
 
 def peek_format(path: Path, limit: int = 4096) -> FormatId | None:
