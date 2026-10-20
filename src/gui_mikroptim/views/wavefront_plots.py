@@ -64,3 +64,44 @@ def rms_heatmap(result: Any, field_angles_deg: Any = None) -> go.Figure:
         height=max(220, 70 * fields + 120), margin={"l": 80, "r": 20, "t": 60, "b": 20}
     )
     return fig
+
+
+def rms_difference_heatmap(
+    diff: Any, labels_fields: list[str], labels_wavelengths: list[str]
+) -> go.Figure:
+    """Heatmap der Differenz B − A [Wellen]: divergierend, symmetrisch um 0 (rot: B schlechter).
+
+    Zellen, in denen ein System keinen gültigen Strahl hat (NaN), bleiben leer („–“).
+    """
+    import numpy as np
+
+    d = np.asarray(diff, dtype=float)
+    finite = d[np.isfinite(d)]
+    half = float(np.max(np.abs(finite))) if finite.size else 1.0
+    half = half if half > 0 else 1.0
+    z = [[float(v) if math.isfinite(v) else None for v in row] for row in d]
+    text = [[f"{v:+.4g}" if math.isfinite(v) else "–" for v in row] for row in d]
+    fig = go.Figure(
+        go.Heatmap(
+            z=z,
+            x=labels_wavelengths,
+            y=labels_fields,
+            text=text,
+            texttemplate="%{text}",
+            colorscale="RdBu_r",
+            zmin=-half,
+            zmax=half,
+            zmid=0.0,
+            colorbar={"title": {"text": "Δ Wellen"}},
+            hovertemplate="%{y}, %{x}<br>Δ %{z:+.6g} Wellen<extra></extra>",
+            xgap=2,
+            ygap=2,
+        )
+    )
+    fig.update_yaxes(autorange="reversed", title_text="Feld")
+    fig.update_xaxes(title_text="Wellenlänge", side="top")
+    fields = len(labels_fields)
+    fig.update_layout(
+        height=max(220, 70 * fields + 120), margin={"l": 80, "r": 20, "t": 60, "b": 20}
+    )
+    return fig

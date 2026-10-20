@@ -57,7 +57,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ---
 
-## G2 – Auswertung
+## G2 – Auswertung ✅
 
 ### G2-T1 – RMS-Wellenfront ✅
 - **Abhängig von:** G1-T2
@@ -74,7 +74,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** `Evaluation.psf` (skalar): PSF linear und logarithmisch, MTF sagittal/tangential mit Beugungsgrenze als Bezug aus den Rückgabewerten, Strehl. Vektorielle PSF über `mikroptim eval --vector --json` (bis Wunsch W3), als kurzer Aufruf oder Job je nach Rasterzahl.
 - **Abnahme:** Strehl und MTF identisch zu `mikroptim eval --psf --json`; Hinweis bei NA > 0,6, dass die skalare Näherung ungenau ist (Mikroptim M8-T2).
 
-### G2-T4 – Vergleich zweier Systeme
+### G2-T4 – Vergleich zweier Systeme ✅
 - **Abhängig von:** G2-T1
 - **Inhalt:** zweites System wählen; RMS-Tabellen nebeneinander und als Differenz, Paraxialdaten nebeneinander. Typischer Fall: Ergebnis einer Synthesestufe gegen die vorige.
 - **Abnahme:** Vergleich nur bei gleichen Feldern und Wellenlängen als Differenz, sonst nebeneinander mit Hinweis (Test).

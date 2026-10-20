@@ -13,7 +13,7 @@ from gui_mikroptim.views.wavefront_plots import rms_heatmap
 
 
 @st.cache_data(show_spinner="Wellenfront wird gerechnet …", max_entries=64)
-def _trace(
+def cached_trace(
     path: str, mtime: float, size: int, options: compute.TraceOptions
 ) -> compute.WavefrontResult:
     """Ergebnis pro Datei, Stand und Optionen (architektur.md, „Zustand und Cache“)."""
@@ -60,7 +60,7 @@ def options_form(status: mko.MikroptimStatus, key: str = "auswertung") -> comput
 def render(entry: FileEntry, system: Any, options: compute.TraceOptions) -> None:
     """Rechnen (gecacht) und darstellen; Fehler von Mikroptim als Meldung."""
     try:
-        result = _trace(str(entry.path), entry.mtime, entry.size, options)
+        result = cached_trace(str(entry.path), entry.mtime, entry.size, options)
     except Exception as exc:  # ValueError (afokal, Optionen), GpuUnavailableError, CudaError
         error = compute.load_error(exc)
         st.error(f"{error.kind}: {error.message}")
