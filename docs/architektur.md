@@ -144,6 +144,8 @@ Format `gui-mikroptim.job/1` (`job.json`):
 | `status` | `wartend`, `läuft`, `fertig`, `fehler`, `abgebrochen` |
 | `error` | nur wenn der Befehl nicht starten konnte |
 
+Umgebung: Jobs erben die Umgebung der GUI, dazu `PYTHONUNBUFFERED=1`, `PYTHONUTF8=1` (Python-Befehle schreiben auch unter Windows UTF-8 in `ausgabe.txt`) und `MKO_GUI_MAX_JOBS`.
+
 Mikroptim-Befehle baut `jobs.mikroptim_argv`: das Programm `mikroptim` (`MKO_GUI_CLI`, fortlaufende Ausgabe) oder `python -m mikroptim`.
 
 ## Fehlerbehandlung
