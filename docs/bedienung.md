@@ -87,7 +87,15 @@ Reiter **„PSF und MTF“**: Beugungs-PSF eines Feldes und einer Wellenlänge a
 - Die vektorielle PSF rechnet Mikroptim über die Kommandozeile (`mikroptim eval --vector`), solange sie nicht in der Python-API steht; direkt in der Seite nur bis Raster 256, größere Läufe gehören in einen Job (ab G4-T1).
 - **Nachrechnen:** `mikroptim eval … --json --psf …` mit denselben Optionen, PSF und MTF des Tupels als CSV.
 
-### Vergleich zweier Systeme (G2-T4, geplant)
+### Vergleich zweier Systeme (G2-T4)
+
+Reiter **„Vergleich“**: A ist das aktuelle System (oben gewählt), B wird im Reiter selbst gewählt (gleiche Quellen wie auf „System“); die Wahl von B ändert das aktuelle System nicht. Beide werden mit den Einstellungen des Reiters „Wellenfront“ gerechnet. Typischer Fall: das Ergebnis einer Synthesestufe gegen die vorige.
+
+- **Kennzahlen:** größter RMS-Wert von A und B (bei B mit Δ, grün wenn kleiner), versagte Strahlen und Flächenzahl beider Systeme.
+- **Gleiche Feldwinkel, Wellenlängen und Referenzwellenlänge:** Heatmap der Differenz B − A in Wellen (rot: B schlechter, blau: B besser, symmetrisch um 0) und aufklappbar die Tabelle mit RMS A, RMS B, Δ und versagten Strahlen.
+- **Sonst:** ein Hinweis mit den Unterschieden und beide RMS-Heatmaps nebeneinander. Die Referenzwellenlänge gehört dazu, weil RMS-Werte in Wellen bei λ_ref des jeweiligen Systems stehen.
+- **Paraxialdaten** nebeneinander mit Δ B − A (nur bei zwei endlichen Zahlen) und aufklappbar beide **Linsenschnitte**.
+- Ist B dieselbe Datei wie A, steht nur ein Hinweis; Fehler eines der beiden Systeme (z. B. afokal) erscheinen mit A oder B gekennzeichnet.
 
 ## Optimierung (G3, geplant)
 

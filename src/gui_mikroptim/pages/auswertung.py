@@ -1,4 +1,4 @@
-"""Seite „Auswertung“: Wellenfront (G2-T1), OPD und Spots (G2-T2), PSF und MTF (G2-T3)."""
+"""Seite „Auswertung“: Wellenfront, OPD und Spots, PSF und MTF, Vergleich (G2-T1 bis G2-T4)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import streamlit as st
 
 from gui_mikroptim.views import (
     common,
+    compare_view,
     eval_view,
     file_picker,
     psf_view,
@@ -32,8 +33,8 @@ if entry is not None:
         st.caption("Details und Reparatur auf der Seite „System“.")
     else:
         st.subheader(system.name or entry.path.stem)
-        tab_trace, tab_eval, tab_psf = st.tabs(
-            ["Wellenfront (trace)", "OPD und Spots (eval)", "PSF und MTF"]
+        tab_trace, tab_eval, tab_psf, tab_compare = st.tabs(
+            ["Wellenfront (trace)", "OPD und Spots (eval)", "PSF und MTF", "Vergleich"]
         )
         with tab_trace:
             options = wavefront_view.options_form(status)
@@ -48,6 +49,5 @@ if entry is not None:
             )
             psf_options, vector_options = psf_view.options_form(status, eval_options)
             psf_view.render(entry, system, eval_options, psf_options, vector_options)
-
-st.divider()
-st.caption("Als Nächstes (docs/plan/meilensteine.md): `G2-T4` Vergleich zweier Systeme.")
+        with tab_compare:
+            compare_view.render(cfg, entry, system, options)
