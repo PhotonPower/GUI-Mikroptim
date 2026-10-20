@@ -186,3 +186,54 @@ def trace_wavefront(system: Any, options: TraceOptions) -> WavefrontResult:
         rings=int(w.rings),
         spokes=int(w.spokes),
     )
+
+
+# --- EVAL: OPD-Karten und Spots (G2-T2) ---------------------------------------------------------
+
+REFERENCES = ("exit-pupil", "vertex")
+REMOVALS = ("piston", "tilt", "defocus")
+
+
+@dataclass(frozen=True)
+class EvalOptions:
+    """Optionen von ``mikroptim.evaluate`` (Standardwerte wie ``mikroptim eval``)."""
+
+    grid: int = 64
+    half: bool = False
+    reference: str = "exit-pupil"
+    gpu: bool = False
+    device: int = 0
+
+    def validate(self) -> None:
+        if not 1 <= self.grid <= 2048:
+            raise ValueError(f"Raster muss zwischen 1 und 2048 liegen, nicht {self.grid}")
+        if self.reference not in REFERENCES:
+            raise ValueError(f"Referenz {self.reference!r} unbekannt")
+
+    def cli_args(self) -> list[str]:
+        """Dieselben Optionen für ``mikroptim eval``."""
+        args = ["--grid", str(self.grid), "--reference", self.reference]
+        if self.half:
+            args.append("--half")
+        if self.gpu:
+            args += ["--gpu", "--device", str(self.device)]
+        return args
+
+
+def mm_to_waves(value_mm: Any, reference_nm: float) -> Any:
+    """OPD in mm → Wellen bei λ_ref, genau wie ``mikroptim eval`` (bitgleich): mm / (λ·10⁻⁶)."""
+    return value_mm / (reference_nm * 1e-6)
+
+
+def evaluate(system: Any, options: EvalOptions) -> Any:
+    """``mikroptim.evaluate``; gibt das ``Evaluation``-Objekt zurück (OPD-Karten und Spots
+    werden pro Tupel daraus gelesen). Ausnahmen werden durchgereicht."""
+    options.validate()
+    return mko.require().evaluate(
+        system,
+        grid=options.grid,
+        half=options.half,
+        reference=options.reference,
+        gpu=options.gpu,
+        device=options.device,
+    )

@@ -82,7 +82,7 @@ def _select(at, file_label, source_label="Beispielsysteme (Mikroptim)"):
 @needs_uploader
 def test_page_shows_wavefront(app_file, workspace, repo):
     at = _select(_page(app_file), "einzellinse_bk7.json")
-    assert len(at.get("plotly_chart")) == 1
+    assert "auswertung.rms" in [c.key for c in at.get("plotly_chart")]
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["versagt"] == "0"
     assert int(metrics["Strahlen"]) > 0
