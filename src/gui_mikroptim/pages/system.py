@@ -25,15 +25,15 @@ entry = file_picker.pick_document(
 if entry is not None:
     status = common.mikroptim_status()
     if not status.available:
-        system_view.file_header(entry)
+        doc = system_view.file_header(entry)
+        if doc is not None:
+            system_view.lens_section(doc)
         st.warning(
             "Für Flächentabelle, Brechzahlen und Paraxialdaten wird Mikroptim benötigt "
-            "(Details auf der Startseite)."
+            "(Details auf der Startseite). Der Linsenschnitt oben ist ungeprüft aus der Datei "
+            "gezeichnet."
         )
     else:
         system = system_view.load_or_report(cfg, entry)
         if system is not None:
             system_view.details(system)
-
-st.divider()
-st.caption("Als Nächstes: `G1-T3` Linsenschnitt in der y-z-Ebene (docs/plan/meilensteine.md).")

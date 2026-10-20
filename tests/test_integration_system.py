@@ -138,6 +138,7 @@ def test_every_example_renders(app_file, workspace, repo):
         assert not at.exception, (label, [e.value for e in at.exception])
         assert not at.error, (label, [e.value for e in at.error])
         assert at.metric, label
+        assert len(at.get("plotly_chart")) == 1, label  # Linsenschnitt
 
 
 @needs_uploader

@@ -11,7 +11,7 @@ import streamlit as st
 from gui_mikroptim.backend import compute, protocols, system_tables
 from gui_mikroptim.backend.files import FileEntry
 from gui_mikroptim.config import Settings
-from gui_mikroptim.views import file_picker
+from gui_mikroptim.views import file_picker, lens_plot
 
 PICKER_KEY = "system"
 
@@ -90,6 +90,42 @@ def catalog_help(cfg: Settings, entry: FileEntry) -> None:
         st.rerun()
 
 
+def lens_section(data: dict[str, Any], key: str = "system.schnitt") -> None:
+    """Linsenschnitt aus einer Systembeschreibung (G1-T3)."""
+    try:
+        geometry = lens_plot.outline(data)
+    except (TypeError, ValueError) as exc:  # unvollständige Datei ohne Mikroptim-Prüfung
+        st.warning(f"Linsenschnitt nicht möglich: {exc}")
+        return
+    if not geometry.surfaces:
+        st.caption("Keine Flächen.")
+        return
+    long_image_space = lens_plot.image_space_is_long(geometry)
+    full = st.toggle(
+        "Bildraum vollständig zeigen",
+        value=not long_image_space,
+        key=f"{key}.bildraum",
+        help="Aus: z-Achse endet kurz hinter der letzten Fläche, die Lage der Bildebene steht "
+        "am rechten Rand.",
+    )
+    st.plotly_chart(
+        lens_plot.lens_figure(geometry, full_image_space=full), width="stretch", key=key
+    )
+    for note in geometry.notes:
+        st.info(note)
+    caption = (
+        "Schnitt in der y-z-Ebene, Maßstab 1:1. Blau: Glas, schwarz: Blende, violett "
+        "gestrichelt: Geisterplatten, rot: Bildebene. Nur Flächen; Strahlen folgen, sobald "
+        "Mikroptim Strahlpfade liefert."
+    )
+    if any(s.transformed for s in geometry.surfaces):
+        caption += (
+            " Dezentrierte/verkippte Flächen sind transformiert gezeichnet (Δx ist im Schnitt "
+            "nicht sichtbar)."
+        )
+    st.caption(caption)
+
+
 def _table(rows: list[dict[str, Any]], empty: str) -> None:
     if rows:
         st.dataframe(rows, hide_index=True, width="stretch")
@@ -124,6 +160,7 @@ def details(system: Any) -> None:
 
     tabs = st.tabs(
         [
+            "Linsenschnitt",
             "Flächen",
             "Spektrum und Felder",
             "Paraxialdaten",
@@ -134,12 +171,14 @@ def details(system: Any) -> None:
         ]
     )
     with tabs[0]:
+        lens_section(data)
+    with tabs[1]:
         _table(system_tables.surface_rows(system, data), "Keine Flächen.")
         st.caption(
             "Material und Brechzahlen gelten für das Medium nach der Fläche; Radius nur zur "
             "Anzeige (1/Krümmung)."
         )
-    with tabs[1]:
+    with tabs[2]:
         left, right = st.columns(2)
         with left:
             st.markdown("**Spektrum**")
@@ -147,7 +186,7 @@ def details(system: Any) -> None:
         with right:
             st.markdown("**Felder**")
             _table(system_tables.field_rows(system), "Keine Feldwinkel (Punktquelle).")
-    with tabs[2]:
+    with tabs[3]:
         if info.paraxial is None:
             st.error(f"Paraxialdaten nicht verfügbar: {info.paraxial_error}")
         else:
@@ -158,7 +197,7 @@ def details(system: Any) -> None:
             _table(system_tables.paraxial_rows(info.paraxial), "Keine Paraxialdaten.")
             with st.expander("Paraxialdaten als JSON"):
                 st.json(info.paraxial)
-    with tabs[3]:
+    with tabs[4]:
         if info.variables_error:
             st.warning(
                 f"Mikroptim kann die Variablen nicht auflösen: {info.variables_error}. "
@@ -167,7 +206,7 @@ def details(system: Any) -> None:
             st.json(data.get("variables") or {})
         else:
             _table(system_tables.variable_rows(info.variables), "Keine Variablen.")
-    with tabs[4]:
+    with tabs[5]:
         st.markdown("**Ziele** (`target`)")
         st.json(system.target or {}, expanded=True)
         st.markdown("**Nebenbedingungen** (`constraints`)")
@@ -175,10 +214,10 @@ def details(system: Any) -> None:
             st.json(data["constraints"], expanded=False)
         else:
             st.caption("Keine Nebenbedingungen.")
-    with tabs[5]:
+    with tabs[6]:
         if data.get("ghost_plates"):
             st.json(data["ghost_plates"], expanded=False)
         else:
             st.caption("Keine Geisterplatten.")
-    with tabs[6]:
+    with tabs[7]:
         st.json(data, expanded=False)
