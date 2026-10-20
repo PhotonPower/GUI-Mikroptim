@@ -116,3 +116,35 @@ def submit_optimize_job(
         mikroptim_version=mko.status().version,
         copy_system=copy_system_with_catalogs,
     )
+
+
+RESULTS_SUBDIR = "ergebnisse"
+
+
+def default_result_name(source: Path) -> str:
+    return f"{source.stem}-optimiert.json"
+
+
+def save_result(result: Any, workspace: Path, filename: str) -> Path:
+    """Speichert ``OptimizeResult.system`` als neue Datei unter ``ergebnisse/`` (G3-T3).
+
+    Der Name wird bereinigt und nie überschrieben (``name-2.json`` …); ``System.save`` schreibt
+    die Glaskatalog-Pfade relativ zur neuen Datei. Die Eingabedatei bleibt unverändert.
+    """
+    from gui_mikroptim.backend import files
+
+    name = files.safe_filename(filename)
+    if not name.lower().endswith(".json"):
+        name += ".json"
+    directory = files.resolve_inside(workspace, RESULTS_SUBDIR)
+    directory.mkdir(parents=True, exist_ok=True)
+    target = files.unique_path(directory, name)
+    # Platz sofort belegen, damit ein gleichzeitiger zweiter Aufruf nicht denselben Namen nimmt
+    with target.open("x", encoding="utf-8"):
+        pass
+    try:
+        result.system.save(str(target))
+    except Exception:
+        target.unlink(missing_ok=True)
+        raise
+    return target

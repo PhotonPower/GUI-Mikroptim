@@ -116,9 +116,12 @@ Braucht Mikroptim. Dateiauswahl wie auf „System“, vorausgewählt das aktuell
 
 Das Ergebnis ist gleich dem von `mikroptim optimize` mit denselben Optionen (Merit bitgleich).
 
-### Ergebnis speichern (G3-T3, geplant)
+### Vorher/Nachher und Speichern (G3-T3)
 
-Vorher/Nachher als Wellenfront; Speichern als neue Datei unter `ergebnisse/`, die Eingabe nie überschrieben.
+- **RMS-Wellenfront vorher → nachher** mit derselben Quadratur wie die Optimierung: größter RMS-Wert vorher und nachher (Δ grün, wenn kleiner), Heatmap der Differenz nachher − vorher (blau: besser) und aufklappbar die Tabelle.
+- **Ergebnis speichern:** Dateiname (Vorschlag `<name>-optimiert.json`) und „Speichern“ schreibt das optimierte System über Mikroptim (`System.save`) als neue Datei nach `ergebnisse/`. Ein vorhandener Name wird nie überschrieben (`…-2.json`), Sonderzeichen werden ersetzt, die Eingabedatei bleibt unverändert. Mit „als aktuelles System übernehmen“ (Standard) ist die neue Datei danach ausgewählt – auf dieser und allen anderen Seiten – und kann gleich weiter ausgewertet oder optimiert werden.
+
+Die gespeicherte Datei reproduziert die Endmerit der Optimierung bitgleich.
 
 ## Jobs und Synthese
 
