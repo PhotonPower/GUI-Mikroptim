@@ -21,5 +21,9 @@ PAGES = [
 ]
 
 navigation = st.navigation(PAGES)
-common.sidebar(__version__)
-navigation.run()
+current_line = common.sidebar(__version__)
+try:
+    navigation.run()
+finally:
+    # auch nach st.stop() einer Seite: aktuelle Auswahl anzeigen
+    common.sidebar_current(current_line)

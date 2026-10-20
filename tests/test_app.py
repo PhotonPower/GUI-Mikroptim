@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
+from conftest import needs_uploader
+
 PAGES = ["pages/system.py", "pages/auswertung.py", "pages/optimierung.py", "pages/synthese.py"]
 
 
@@ -58,6 +60,7 @@ def test_protocol_browser_shows_protocol(
     assert "Kandidat" in [s.label for s in at.selectbox]
 
 
+@needs_uploader
 def test_protocol_browser_filter(
     app_file: Path, workspace: Path, test_data: Path, without_mikroptim
 ):
@@ -79,3 +82,19 @@ def test_protocol_browser_broken_file(
 def test_protocol_browser_empty(app_file: Path, workspace: Path, without_mikroptim):
     at = _run(app_file, "pages/synthese.py")
     assert any("Keine passenden Dateien" in i.value for i in at.info)
+
+
+@needs_uploader
+def test_protocol_upload(app_file: Path, workspace: Path, test_data: Path, without_mikroptim):
+    at = _run(app_file, "pages/synthese.py")
+    data = (test_data / "synth_beispiel.json").read_bytes()
+    at.file_uploader[0].set_value(("lauf.json", data, "application/json")).run()
+    assert not at.exception
+    assert (workspace / "uploads" / "lauf.json").is_file()
+    assert any("Ziel erreicht" in s.value for s in at.success)
+    # ein System passt hier nicht
+    at.file_uploader[0].set_value(
+        ("s.json", b'{"format": "mikroptim.system/1"}', "application/json")
+    ).run()
+    assert any("Upload abgelehnt" in e.value for e in at.error)
+    assert not (workspace / "uploads" / "s.json").exists()

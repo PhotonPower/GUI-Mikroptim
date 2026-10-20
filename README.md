@@ -6,7 +6,7 @@ Die GUI ist ein **Test- und Auswertecockpit** für den Server, auf dem Mikroptim
 
 ## Status
 
-G0 (Gerüst) und G4-T2 (Protokollbrowser für Synthese-Läufe) abgeschlossen. G0: Paketstruktur, Konfiguration, sicherer Dateizugriff im Arbeitsbereich, Lesen der Mikroptim-Protokolle, Startseite mit Status von Mikroptim und GPUs, Platzhalterseiten, Tests, CI, Dokumentation. Die Funktionsseiten folgen nach dem [Meilensteinplan](docs/plan/meilensteine.md): G1 System, G2 Auswertung, G3 Optimierung, G4 Jobs und Synthese, G5 Betrieb.
+G0 (Gerüst), G4-T2 (Protokollbrowser für Synthese-Läufe) und G1-T1 (Dateiauswahl mit Upload, aktuelles System) abgeschlossen. G0: Paketstruktur, Konfiguration, sicherer Dateizugriff im Arbeitsbereich, Lesen der Mikroptim-Protokolle, Startseite mit Status von Mikroptim und GPUs, Platzhalterseiten, Tests, CI, Dokumentation. Die Funktionsseiten folgen nach dem [Meilensteinplan](docs/plan/meilensteine.md): G1 System, G2 Auswertung, G3 Optimierung, G4 Jobs und Synthese, G5 Betrieb.
 
 ## Schnellstart
 
