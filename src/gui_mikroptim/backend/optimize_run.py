@@ -81,7 +81,7 @@ def run_optimize(
             on_cycle(entry, history)
         if should_stop is not None and should_stop():
             raise _Stop(CANCELLED)
-        if time_limit_s is not None and time.monotonic() - start > time_limit_s:
+        if time_limit_s is not None and time.monotonic() - start >= time_limit_s:
             raise _Stop(TIME_LIMIT)
 
     try:
