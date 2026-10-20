@@ -1,0 +1,97 @@
+"""RMS-Wellenfront auf der Seite „Auswertung“ (G2-T1)."""
+
+from __future__ import annotations
+
+from typing import Any
+
+import streamlit as st
+
+from gui_mikroptim.backend import compute, mko, system_tables
+from gui_mikroptim.backend.files import FileEntry
+from gui_mikroptim.views import system_view
+from gui_mikroptim.views.wavefront_plots import rms_heatmap
+
+
+@st.cache_data(show_spinner="Wellenfront wird gerechnet …", max_entries=64)
+def _trace(
+    path: str, mtime: float, size: int, options: compute.TraceOptions
+) -> compute.WavefrontResult:
+    """Ergebnis pro Datei, Stand und Optionen (architektur.md, „Zustand und Cache“)."""
+    system = system_view.cached_system(path, mtime, size)
+    return compute.trace_wavefront(system, options)
+
+
+def options_form(status: mko.MikroptimStatus, key: str = "auswertung") -> compute.TraceOptions:
+    """Einstellungen; GPU-Schalter nur mit CUDA-Build und nutzbarem Gerät."""
+    c1, c2, c3, c4 = st.columns([1, 1, 1, 2])
+    rings = c1.number_input("Ringe", 1, 256, 10, key=f"{key}.ringe")
+    spokes = c2.number_input("Speichen", 1, 256, 8, key=f"{key}.speichen")
+    gpu = False
+    device = 0
+    precision = "fp64"
+    if status.has_cuda and status.devices:
+        gpu = c3.toggle("GPU", value=False, key=f"{key}.gpu")
+        if gpu:
+            if len(status.devices) > 1:
+                device = c4.selectbox(
+                    "Gerät",
+                    [int(d.get("index", i)) for i, d in enumerate(status.devices)],
+                    format_func=lambda i: f"{i}: {status.devices[i].get('name', '')}",
+                    key=f"{key}.geraet",
+                )
+            precision = c4.radio(
+                "Genauigkeit",
+                list(compute.PRECISIONS),
+                horizontal=True,
+                key=f"{key}.genauigkeit",
+                help="df64: doppelte Gleitkommazahl aus zwei FP32-Werten (Mikroptim ADR-0003)",
+            )
+    return compute.TraceOptions(int(rings), int(spokes), gpu, int(device), precision)
+
+
+def render(entry: FileEntry, system: Any, options: compute.TraceOptions) -> None:
+    """Rechnen (gecacht) und darstellen; Fehler von Mikroptim als Meldung."""
+    try:
+        result = _trace(str(entry.path), entry.mtime, entry.size, options)
+    except Exception as exc:  # ValueError (afokal, Optionen), GpuUnavailableError, CudaError
+        error = compute.load_error(exc)
+        st.error(f"{error.kind}: {error.message}")
+        return
+
+    backend = result.backend.upper()
+    if result.device_name:
+        backend += f" ({result.device_name})"
+    focal = system_tables.fmt_number(result.target_focal_length, 7)
+    st.markdown(
+        f"**RMS-Wellenfront** in Wellen bei λ_ref = {result.reference_nm:g} nm · "
+        f"{result.rings} Ringe × {result.spokes} Speichen · {backend}, {result.precision} · "
+        f"Sollbrennweite {focal} mm"
+    )
+    finite = result.rms_waves[result.rms_waves == result.rms_waves]
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("RMS max [Wellen]", f"{finite.max():.4g}" if finite.size else "–")
+    c2.metric("RMS min [Wellen]", f"{finite.min():.4g}" if finite.size else "–")
+    c3.metric("Strahlen", result.total_rays)
+    c4.metric("versagt", result.total_failed)
+    if result.total_failed:
+        st.warning(
+            f"{result.total_failed} von {result.total_rays} Strahlen versagt "
+            "(Fehlschnitt, Totalreflexion oder Blende); betroffene Zellen sind mit ⚠ markiert."
+        )
+
+    st.plotly_chart(
+        rms_heatmap(result, system.field_angles_deg), width="stretch", key="auswertung.rms"
+    )
+    with st.expander("Tabelle", expanded=False):
+        st.dataframe(
+            system_tables.wavefront_rows(result, system.field_angles_deg),
+            hide_index=True,
+            width="stretch",
+        )
+    st.caption(
+        "Nachrechnen: `mikroptim trace "
+        + entry.path.name
+        + " --json "
+        + " ".join(options.cli_args())
+        + "`"
+    )

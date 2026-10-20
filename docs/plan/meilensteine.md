@@ -59,7 +59,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ## G2 – Auswertung
 
-### G2-T1 – RMS-Wellenfront
+### G2-T1 – RMS-Wellenfront ✅
 - **Abhängig von:** G1-T2
 - **Inhalt:** `mikroptim.trace` mit Ringen, Speichen, GPU, Genauigkeit (`fp64`/`df64`, nur mit CUDA); Ergebnis als Tabelle und Heatmap Feld × Wellenlänge (Wellen bei λ_ref), versagte Strahlen markiert. Optionen in der Ergebnisüberschrift.
 - **Abnahme:** Zahlen identisch zu `mikroptim trace --json` für zwei Beispielsysteme (Test); GPU-Schalter nur sichtbar mit CUDA-Build und Gerät; `GpuUnavailableError` wird als Meldung gezeigt.

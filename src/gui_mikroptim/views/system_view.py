@@ -17,7 +17,7 @@ PICKER_KEY = "system"
 
 
 @st.cache_resource(show_spinner="System wird geladen …", max_entries=32)
-def _load(path: str, mtime: float, size: int) -> Any:
+def cached_system(path: str, mtime: float, size: int) -> Any:
     """``mikroptim.System`` pro Datei und Stand; ``System`` ist unveränderlich (architektur.md)."""
     del mtime, size  # nur Schlüssel
     return compute.load_system(Path(path))
@@ -47,12 +47,24 @@ def file_header(entry: FileEntry) -> dict[str, Any] | None:
     return doc
 
 
+def load(entry: FileEntry) -> tuple[Any | None, compute.LoadError | None]:
+    """System aus dem Cache laden; Ausnahmen von Mikroptim werden zu ``LoadError``."""
+    try:
+        return cached_system(str(entry.path), entry.mtime, entry.size), None
+    except Exception as exc:  # FormatError, GlassError, ValueError, FileNotFoundError …
+        return None, compute.load_error(exc)
+
+
+def show_load_error(error: compute.LoadError) -> None:
+    where = f" (JSON-Pfad `{error.json_path}`)" if error.json_path else ""
+    st.error(f"{error.kind}{where}: {error.message}")
+
+
 def load_or_report(cfg: Settings, entry: FileEntry) -> Any | None:
     """System laden; Fehler mit JSON-Pfad zeigen und bei Katalogfehlern Reparatur anbieten."""
-    try:
-        return _load(str(entry.path), entry.mtime, entry.size)
-    except Exception as exc:  # Ausnahmen von Mikroptim: FormatError, GlassError, ValueError …
-        error = compute.load_error(exc)
+    system, error = load(entry)
+    if error is None:
+        return system
     where = f" (JSON-Pfad `{error.json_path}`)" if error.json_path else ""
     st.error(f"{error.kind}{where}: {error.message}")
     if error.is_catalog_error:

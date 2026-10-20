@@ -181,3 +181,33 @@ def variable_rows(variables: list[dict[str, Any]]) -> list[dict[str, Any]]:
         }
         for v in variables
     ]
+
+
+def wavefront_rows(result: Any, field_angles_deg: Any = None) -> list[dict[str, Any]]:
+    """Eine Zeile pro (Feld, Wellenlänge), Reihenfolge wie ``wavefront`` von ``trace --json``.
+
+    Nicht endliche RMS-Werte (kein gültiger Strahl) erscheinen als ``None`` wie in der CLI.
+    """
+    angles = _as_list(field_angles_deg)
+    rows = []
+    fields, wavelengths = result.rms_waves.shape
+    for f in range(fields):
+        for j in range(wavelengths):
+            rms = float(result.rms_waves[f, j])
+            rows.append(
+                {
+                    "Feld": f,
+                    "Feldwinkel [°]": float(angles[f]) if f < len(angles) else None,
+                    "λ [nm]": float(result.wavelengths_nm[j]),
+                    "Pupille": result.pupil_modes[f] if f < len(result.pupil_modes) else "",
+                    "Strahlen": int(result.rays[f, j]),
+                    "versagt": int(result.failed[f, j]),
+                    "RMS [Wellen]": rms if math.isfinite(rms) else None,
+                    "RMS [mm]": float(result.rms_mm[f, j])
+                    if math.isfinite(float(result.rms_mm[f, j]))
+                    else None,
+                    "Kolben [mm]": float(result.piston_mm[f, j]),
+                    "Bildpunkt y [mm]": float(result.image_points[f, 1]),
+                }
+            )
+    return rows
