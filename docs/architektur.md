@@ -38,6 +38,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/current.py` | G1-T1 | aktuelles System in `st.session_state["aktuell.datei"]` (absoluter Pfad, geprüft gegen die erlaubten Wurzeln) |
 | `views/synth_plots.py` | G4-T2 | Verlaufsfigur eines Synthese-Protokolls (rein, ohne Streamlit) |
 | `views/synth_view.py` | G4-T2 | Darstellung eines Synthese-Protokolls |
+| `views/lens_plot.py` | G1-T3 | Geometrie des Linsenschnitts (`outline`: Profile mit exakter Pfeilhöhe, Glaskörper, Geisterplatten, Bildebene, Hinweise) und Plotly-Figur (`lens_figure`); rein, ohne Streamlit |
 | `views/system_view.py` | G1-T2 | Laden mit Cache (`st.cache_resource` pro Pfad, Änderungszeit, Größe), Fehleranzeige, Katalogreparatur, Reiter der Seite „System“ |
 
 ### Backend-Module

@@ -29,7 +29,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ---
 
-## G1 – System
+## G1 – System ✅
 
 ### G1-T1 – Dateiauswahl und Upload ✅
 - **Abhängig von:** G0
@@ -48,7 +48,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
   - Glaskataloge hochgeladener Dateien: Mikroptim sucht `glass_catalogs` vom Verzeichnis der Datei aus aufwärts, Dateien in `uploads/` finden Kataloge wie `data/glass/basis.json` also nicht. Lösung ohne eigene Pfadlogik: Kann `load_system` die Kataloge nicht finden, bietet die Seite an, die Datei mit `System.from_json(text, base_dir=<Mikroptim-Checkout>)` zu laden und mit `System.save()` als neue Datei unter `uploads/` zu speichern (Mikroptim schreibt die Katalogpfade relativ zur neuen Datei). Test mit einer hochgeladenen Kopie von `einzellinse_bk7.json`.
   - Alle Beispielsysteme in `data/systems` laden ohne Ausnahme der App (parametrisierter Integrationstest).
 
-### G1-T3 – Linsenschnitt
+### G1-T3 – Linsenschnitt ✅
 - **Abhängig von:** G1-T2
 - **Inhalt:** Plotly-Figur in `views/lens_plot.py` aus Krümmung, Dicke und Halbdurchmesser (y-z-Schnitt, Pfeilhöhe exakt für die Zeichnung, Linsenkörper gefüllt, Blende markiert, Geisterplatten gestrichelt, Bildebene). Dezentrierung und Verkippung nach den Konventionen von Mikroptim (ADR-0011 dort) nur darstellen. Strahlen erst, wenn Mikroptim-Wunsch W1 erfüllt ist (eigene Folgeaufgabe).
 - **Abnahme:**

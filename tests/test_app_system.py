@@ -133,3 +133,10 @@ def test_without_repo_only_workspace_sources(app_file, workspace, without_mikrop
     monkeypatch.delenv("MKO_GUI_MIKROPTIM_REPO", raising=False)
     at = _system_page(app_file)
     assert at.selectbox(key="system.quelle").options == ["Uploads", "Ergebnisse"]
+
+
+def test_lens_section_without_mikroptim(app_file, workspace, fake_repo, without_mikroptim):
+    at = _system_page(app_file)
+    charts = at.get("plotly_chart")
+    assert len(charts) == 1
+    assert any("ungeprüft aus der Datei" in w.value for w in at.warning)

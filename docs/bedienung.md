@@ -35,9 +35,17 @@ Mikroptim sucht die Pfade unter `glass_catalogs` vom Verzeichnis der Systemdatei
 
 Dann erscheint der Knopf **„Mit Glaskatalogen aus dem Mikroptim-Checkout neu speichern“** (nur mit `MKO_GUI_MIKROPTIM_REPO`). Mikroptim lädt die Datei mit Katalogsuche ab dem Checkout (`System.from_json`) und speichert sie als `uploads/<name>-kataloge.json` (`System.save`). Dabei passt Mikroptim nur die Einträge unter `glass_catalogs` an den neuen Ort an, alles andere bleibt gleich; die neue Datei ist sofort ausgewählt, die ursprüngliche bleibt unverändert. Die neuen Pfade sind relativ zur neuen Datei (z. B. `../../src/Mikroptim/data/glass/basis.json`): Verschiebt man Arbeitsbereich oder Checkout, muss man neu speichern.
 
-### Linsenschnitt (G1-T3, geplant)
+### Linsenschnitt (G1-T3)
 
-Schnitt des Systems in der y-z-Ebene aus Krümmung, Dicke und Halbdurchmesser; Strahlen, sobald Mikroptim Strahlpfade liefert (Wunsch W1).
+Erster Reiter der Seite: Schnitt des Systems in der y-z-Ebene im Maßstab 1:1, gezeichnet aus Krümmung, Dicke, Halbdurchmesser, Material, Dezentrierung und Verkippung der Systembeschreibung.
+
+- **Blau gefüllt:** Glas, also jeder Raum zwischen zwei Flächen, nach denen das Medium nicht `AIR` ist; Kittglieder erscheinen als zwei angrenzende Körper. **Schwarz:** Blende (Fläche 0) mit Pupillenradius. **Violett gestrichelt:** Geisterplatten mit ihrem Normierungsradius. **Rot:** Bildebene. Grau strichpunktiert: optische Achse. Über jeder Fläche steht ihre Nummer, mit der Maus Typ, Scheitellage und ob die Fläche dezentriert oder verkippt ist.
+- **Bildraum:** Ist er länger als das System selbst (z. B. Einzellinse mit 100 mm Schnittweite), endet die z-Achse kurz hinter der letzten Fläche, und die Lage der Bildebene steht am rechten Rand. Der Schalter „Bildraum vollständig zeigen“ zeigt alles.
+- **Hinweise** erscheinen unter dem Schnitt, z. B. wenn ein Halbdurchmesser größer als der Flächenradius ist (Profil dann bis zur Halbkugel gezeichnet, gepunktet) oder wenn nach der letzten Fläche kein Luft folgt.
+- **Dezentrierung und Verkippung** nach Mikroptim ADR-0011: Sie betreffen nur die Fläche, Drehpunkt ist ihr Scheitel. Gezeichnet wird das transformierte Meridianprofil; eine Dezentrierung in x ist im y-z-Schnitt nicht sichtbar. Toleranzwerte sind klein und deshalb meist nicht zu erkennen.
+- **Ohne Mikroptim** wird der Schnitt direkt aus der Datei gezeichnet, ungeprüft.
+
+Strahlen folgen, sobald Mikroptim Strahlpfade liefert (Wunsch W1 in docs/schnittstelle-mikroptim.md).
 
 ## Auswertung (G2, geplant)
 
