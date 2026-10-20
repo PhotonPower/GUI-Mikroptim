@@ -16,11 +16,28 @@ Zeigt, ob Mikroptim geladen werden kann (Version, CPU- oder CUDA-Build, GPUs mit
 
 Darunter stehen Name, Beschreibung, Zahl der Flächen, Wellenlängen und Felder, Pfad, Größe, Änderungszeit und die Glaskataloge der Datei, so wie sie in der Datei stehen.
 
-**Hinweis zu Glaskatalogen:** Mikroptim sucht die Pfade unter `glass_catalogs` vom Verzeichnis der Systemdatei aus aufwärts. Eine hochgeladene Datei mit `data/glass/basis.json` findet ihren Katalog im Arbeitsbereich deshalb nicht. Das löst G1-T2 (siehe Plan); bis dahin absolute Pfade verwenden oder Beispielsysteme direkt aus dem Mikroptim-Checkout wählen.
+### System ansehen (G1-T2)
 
-### Tabellen, Paraxialdaten, Linsenschnitt (G1-T2, G1-T3, geplant)
+Ist Mikroptim installiert, lädt die Seite die gewählte Datei mit `mikroptim.load_system` und zeigt:
 
-Flächentabelle (Typ, Krümmung und Radius, Dicke, Material, Halbdurchmesser, Dezentrierung/Verkippung), Spektrum, Felder, Variablen und Nebenbedingungen, Paraxialdaten bei λ_ref und der Linsenschnitt.
+- **Kennzahlen:** Flächen, Geisterplatten, Wellenlängen, Felder, Brennweite (bei afokalen Systemen „afokal“), darunter Pfad, λ_ref, Art der Quelle und die tatsächlich geladenen Glaskataloge. Warnungen von Mikroptim stehen gelb darüber.
+- **Flächen:** Typ, Krümmung, Radius (nur Anzeige, ∞ bei Planflächen), Dicke, Material nach der Fläche (Katalogname, „konstant n = …“ oder Buchdahl-Koeffizienten), Halbdurchmesser, Brechzahl je Wellenlänge, Dezentrierung, Verkippung, Kommentar.
+- **Spektrum und Felder** mit Gewichten; die Referenzwellenlänge ist markiert.
+- **Paraxialdaten** bei λ_ref aus `mikroptim.paraxial` (identisch zum Feld `paraxial` von `mikroptim trace --json`): Brennweite, Schnittweiten, Hauptebenen, Defokus der Bildebene, Petzvalsumme, -krümmung und -radius, Austrittspupille, ABCD-Matrix. Leere Werte („–“) liefert Mikroptim z. B. bei afokalen Systemen. Aufklappbar als JSON.
+- **Variablen** mit Wert und Schranken. Kann Mikroptim sie nicht auflösen (z. B. Glasvariablen auf Katalog-Gläsern, die erst `optimize` umwandelt), steht dort die Meldung und der Abschnitt `variables` der Datei.
+- **Ziele und Nebenbedingungen**, **Geisterplatten** und die ganze Datei als **JSON**, so wie Mikroptim sie liest (`system_to_dict`).
+
+Fehler beim Laden erscheinen rot mit dem JSON-Pfad, an dem Mikroptim den Fehler gefunden hat, z. B. ``FormatError (JSON-Pfad `surfaces[1].curvature`)``. Ohne Mikroptim zeigt die Seite nur die Kopfdaten aus der Datei.
+
+### Glaskataloge hochgeladener Dateien
+
+Mikroptim sucht die Pfade unter `glass_catalogs` vom Verzeichnis der Systemdatei aus aufwärts. Eine hochgeladene Kopie eines Beispielsystems mit `data/glass/basis.json` findet ihren Katalog im Arbeitsbereich deshalb nicht; die Seite meldet den Fehler mit JSON-Pfad `glass_catalogs[…]`.
+
+Dann erscheint der Knopf **„Mit Glaskatalogen aus dem Mikroptim-Checkout neu speichern“** (nur mit `MKO_GUI_MIKROPTIM_REPO`). Mikroptim lädt die Datei mit Katalogsuche ab dem Checkout (`System.from_json`) und speichert sie als `uploads/<name>-kataloge.json` (`System.save`). Dabei passt Mikroptim nur die Einträge unter `glass_catalogs` an den neuen Ort an, alles andere bleibt gleich; die neue Datei ist sofort ausgewählt, die ursprüngliche bleibt unverändert. Die neuen Pfade sind relativ zur neuen Datei (z. B. `../../src/Mikroptim/data/glass/basis.json`): Verschiebt man Arbeitsbereich oder Checkout, muss man neu speichern.
+
+### Linsenschnitt (G1-T3, geplant)
+
+Schnitt des Systems in der y-z-Ebene aus Krümmung, Dicke und Halbdurchmesser; Strahlen, sobald Mikroptim Strahlpfade liefert (Wunsch W1).
 
 ## Auswertung (G2, geplant)
 

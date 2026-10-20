@@ -1,13 +1,10 @@
-"""Seite „System“: Systemdatei wählen oder hochladen (G1-T1); Tabellen folgen (G1-T2, G1-T3)."""
+"""Seite „System“: Datei wählen oder hochladen (G1-T1), Tabellen und Paraxialdaten (G1-T2)."""
 
 from __future__ import annotations
 
-import datetime as dt
-
 import streamlit as st
 
-from gui_mikroptim.backend import protocols
-from gui_mikroptim.views import common, file_picker
+from gui_mikroptim.views import common, file_picker, system_view
 
 cfg = common.settings_or_stop()
 st.title("System")
@@ -15,7 +12,7 @@ st.title("System")
 entry = file_picker.pick_document(
     cfg,
     ("mikroptim.system",),
-    key="system",
+    key=system_view.PICKER_KEY,
     empty_hint=(
         "Systemdateien (mikroptim.system/1) hochladen oder MKO_GUI_MIKROPTIM_REPO setzen, "
         "um die Beispielsysteme von Mikroptim zu sehen."
@@ -26,31 +23,17 @@ entry = file_picker.pick_document(
 )
 
 if entry is not None:
-    try:
-        fmt, doc = protocols.load_document(entry.path)
-    except protocols.ProtocolError as exc:
-        st.error(str(exc))
-        st.stop()
-
-    st.subheader(doc.get("name") or entry.path.stem)
-    if doc.get("description"):
-        st.write(doc["description"])
-    spectrum = doc.get("spectrum") or {}
-    source = doc.get("source") or {}
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Flächen", len(doc.get("surfaces") or []))
-    c2.metric("Wellenlängen", len(spectrum.get("wavelengths_nm") or []))
-    c3.metric("Felder", len(source.get("field_angles_deg") or []))
-    modified = dt.datetime.fromtimestamp(entry.mtime).strftime("%Y-%m-%d %H:%M")
-    st.caption(
-        f"{entry.path} · {fmt} · {entry.size / 1024:.1f} KiB · geändert {modified} · "
-        f"Glaskataloge: {', '.join(doc.get('glass_catalogs') or []) or '–'}"
-    )
+    status = common.mikroptim_status()
+    if not status.available:
+        system_view.file_header(entry)
+        st.warning(
+            "Für Flächentabelle, Brechzahlen und Paraxialdaten wird Mikroptim benötigt "
+            "(Details auf der Startseite)."
+        )
+    else:
+        system = system_view.load_or_report(cfg, entry)
+        if system is not None:
+            system_view.details(system)
 
 st.divider()
-st.markdown(
-    "**Als Nächstes** (docs/plan/meilensteine.md):\n"
-    "- `G1-T2` Flächentabelle, Spektrum, Felder, Variablen, Nebenbedingungen, Paraxialdaten "
-    "(gerechnet von Mikroptim)\n"
-    "- `G1-T3` Linsenschnitt in der y-z-Ebene"
-)
+st.caption("Als Nächstes: `G1-T3` Linsenschnitt in der y-z-Ebene (docs/plan/meilensteine.md).")

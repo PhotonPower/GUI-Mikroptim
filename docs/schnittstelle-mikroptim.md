@@ -17,17 +17,19 @@ Mikroptim hat noch keine Releases. Bis dahin gilt: Die CI baut bei jedem Lauf da
 | Name | genutzt in | Zweck |
 |---|---|---|
 | `__version__`, `has_cuda`, `device_count()`, `devices()` | G0 Start | Status, Geräteliste (`index`, `name`, `total_bytes`, `free_bytes`) |
-| `load_system(path)` → `System` | G1 | Systemdatei samt Glaskatalogen laden |
-| `System`-Eigenschaften (`surface_types`, `curvatures`, `thicknesses`, `semi_diameters`, `materials`, `indices`, `wavelengths_nm`, `field_angles_deg`, `target`, `warnings`, `variables()`) | G1 | Tabellen, Linsenschnitt |
-| `system_to_dict` | G1, G3 | Abschnitte `variables`, `constraints`, `ghost_plates` anzeigen |
-| `paraxial(system)` → `Paraxial.to_dict()` | G1 | Paraxialdaten |
+| `load_system(path)` → `System` | G1-T2 | Systemdatei samt Glaskatalogen laden |
+| `System`-Eigenschaften `name`, `description`, `file`, `num_surfaces`, `num_ghost_plates`, `surface_types`, `curvatures`, `thicknesses`, `semi_diameters`, `materials`, `indices` (S, L), `wavelengths_nm`, `wavelength_weights`, `reference_nm`, `field_angles_deg`, `field_weights`, `source_type`, `target`, `warnings`, `catalog_files` | G1-T2 | Tabellen, Kennzahlen |
+| `System.variables()` | G1-T2 | Variablentabelle; wirft `ValueError` bei Glasvariablen auf Katalog-Gläsern (die GUI zeigt dann den Abschnitt der Datei) |
+| `System.from_json(text, base_dir)`, `System.save(path)` | G1-T2 | Glaskatalog-Pfade hochgeladener Dateien reparieren (`save` passt `glass_catalogs` an den neuen Ort an) |
+| `system_to_dict` | G1-T2, G3 | Materialmodelle, Dezentrierung/Verkippung, Kommentare, `constraints`, `ghost_plates`, JSON-Ansicht |
+| `paraxial(system)` → `Paraxial.to_dict()` | G1-T2 | Paraxialdaten; bei afokalen Systemen `afocal: true` und Brennweite/Schnittweiten `None` (wie die CLI) |
 | `trace(system, rings, spokes, gpu, device, precision)` → `Wavefront` | G2-T1 | RMS pro Feld und Wellenlänge, versagte Strahlen |
 | `evaluate(system, grid, half, reference, gpu, …)` → `Evaluation` | G2-T2 | `stats`, `opd_map`, `spots`, `pupil_points` |
 | `Evaluation.psf(f, l, padding, numerical_aperture, gpu)` → `Psf` | G2-T3 | PSF, MTF-Schnitte, Strehl |
 | `optimize(system, …, jacobian, callback)` → `OptimizeResult` | G3 | Optimierung mit Live-Verlauf; `result.system.save(path)` |
 | `run_cli(args)` / `python -m mikroptim` | G2-T3, G4 | Unterbefehle ohne Bindung (`synth`, `insert`, `snap`, `eval --vector`) |
 
-Ausnahmen: `FormatError` (mit `json_path`, `file`), `GlassError`, `GpuUnavailableError`, `CudaError`, `FileNotFoundError`, `ValueError`.
+Ausnahmen: `FormatError` (mit `json_path`, `message`, `file`), `GlassError`, `GpuUnavailableError`, `CudaError`, `FileNotFoundError`, `ValueError`. Ein nicht gefundener Glaskatalog ist ein `FormatError` mit `json_path` `glass_catalogs[i]`; Mikroptim sucht relative Katalogpfade ab dem Verzeichnis der Datei aufwärts (`resolve_glass_catalogs`).
 
 ## Kommandozeile (Referenz: Mikroptim `docs/cli.md`)
 

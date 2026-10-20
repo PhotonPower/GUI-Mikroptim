@@ -39,7 +39,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
   - Upload mit falschem Format (`mikroptim.glass/1`, kein JSON, fremdes Format) wird mit Meldung abgelehnt und nicht gespeichert.
   - Wechsel der Seite behält die gewählte Datei.
 
-### G1-T2 – Systemtabelle und Paraxialdaten
+### G1-T2 – Systemtabelle und Paraxialdaten ✅
 - **Abhängig von:** G1-T1
 - **Inhalt:** `backend/compute.py` mit `load_system_cached` (Schlüssel: Pfad, mtime, Größe). Tabellen: Flächen (Typ, Krümmung, Radius zur Anzeige, Dicke, Material mit n bei λ_ref aus `System.indices`, Halbdurchmesser, Dezentrierung/Verkippung, Kommentar), Spektrum mit Gewichten, Felder mit Gewichten, Ziele, Variablen, Nebenbedingungen, Geisterplatten (aus `system_to_dict`). Paraxialdaten aus `Paraxial.to_dict()`. Warnungen aus `System.warnings`.
 - **Abnahme:**

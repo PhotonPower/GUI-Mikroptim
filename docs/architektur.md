@@ -38,6 +38,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/current.py` | G1-T1 | aktuelles System in `st.session_state["aktuell.datei"]` (absoluter Pfad, geprüft gegen die erlaubten Wurzeln) |
 | `views/synth_plots.py` | G4-T2 | Verlaufsfigur eines Synthese-Protokolls (rein, ohne Streamlit) |
 | `views/synth_view.py` | G4-T2 | Darstellung eines Synthese-Protokolls |
+| `views/system_view.py` | G1-T2 | Laden mit Cache (`st.cache_resource` pro Pfad, Änderungszeit, Größe), Fehleranzeige, Katalogreparatur, Reiter der Seite „System“ |
 
 ### Backend-Module
 
@@ -49,7 +50,8 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `backend/protocols.py` (Erweiterung) | G4-T2 | Format aus dem Dateianfang (`peek_format`), Dateilisten nach Format (`list_documents`), Kandidaten- und Zieltabellen, Schrittfilter |
 | `backend/uploads.py` | G1-T1 | Upload prüfen (Endung, Größe, UTF-8, Format) und unter `uploads/` ablegen, BOM entfernen |
 | `backend/jobs.py` | G4-T1 | Jobs als Unterprozesse, Ablage `gui-mikroptim.job/1` |
-| `backend/compute.py` | G2-T1 | dünne Hüllen um `trace`, `evaluate`, `psf`, mit Rückgabe als einfache Datenklassen für die Views |
+| `backend/compute.py` | G1-T2 | dünne Hüllen um Mikroptim: `load_system`, `details` (Systembeschreibung, Paraxialdaten, Variablen mit Teilfehlern), `load_error` (Ausnahme → Art, Meldung, JSON-Pfad), `repair_catalogs` (über `System.from_json`/`save`); ab G2-T1 auch `trace`, `evaluate`, `psf` |
+| `backend/system_tables.py` | G1-T2 | Tabellenzeilen aus `System` und `system_to_dict` (Flächen, Spektrum, Felder, Paraxialdaten, Variablen), Zahlenformat mit ∞/NaN |
 
 ## Seiten
 
