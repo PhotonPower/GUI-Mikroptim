@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gui-mikroptim"
+version = "0.1.0"
+description = "Streamlit-Oberfläche zum Testen und Auswerten von Mikroptim"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "KF" }]
+dependencies = [
+    "streamlit>=1.40,<2",
+    "numpy>=1.22",
+    "plotly>=5.20,<8",
+]
+# Mikroptim ist absichtlich keine Abhängigkeit: Es wird als eigenes Wheel aus dem
+# Mikroptim-Repository gebaut (CPU oder CUDA) und separat installiert (ADR-0002).
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+gui-mikroptim = "gui_mikroptim.__main__:main"
+
+[project.urls]
+Repository = "https://github.com/PhotonPower/GUI-Mikroptim"
+Mikroptim = "https://github.com/PhotonPower/Mikroptim"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gui_mikroptim = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -m 'not integration'"
+markers = [
+    "integration: braucht ein installiertes Mikroptim-Wheel (python -m pytest -m integration)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# RUF001-003: deutsche Texte mit typografischen Zeichen (–, „ “, ’) sind gewollt.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.format]
+quote-style = "double"

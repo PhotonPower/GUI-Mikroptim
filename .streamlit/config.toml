@@ -1,0 +1,21 @@
+# Gilt, wenn Streamlit aus dem Repository-Wurzelverzeichnis gestartet wird.
+# Das Startprogramm gui-mikroptim setzt address/port zusätzlich explizit (ADR-0004).
+
+[server]
+address = "127.0.0.1"
+port = 8501
+headless = true
+runOnSave = false
+# Hochgeladene Systemdateien sind klein; 20 MB reichen auch für Protokolle.
+maxUploadSize = 20
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+
+[client]
+toolbarMode = "minimal"
+
+[theme]
+base = "light"

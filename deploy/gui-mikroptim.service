@@ -1,0 +1,18 @@
+# systemd-Benutzerdienst für GUI-Mikroptim (docs/betrieb.md, „Als Dienst“).
+# Installation: ~/.config/systemd/user/gui-mikroptim.service
+
+[Unit]
+Description=GUI-Mikroptim (Streamlit, nur 127.0.0.1)
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/gui-mikroptim/env
+ExecStart=%h/venvs/gui-mikroptim/bin/gui-mikroptim --server.port ${MKO_GUI_PORT}
+Restart=on-failure
+RestartSec=5
+# Jobs (ab G4) laufen in eigenen Prozessgruppen und werden beim Stoppen nicht mit beendet
+KillMode=process
+
+[Install]
+WantedBy=default.target

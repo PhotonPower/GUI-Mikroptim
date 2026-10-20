@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # wöchentlich gegen Mikroptim main: fängt API-Änderungen in Mikroptim ab
+    - cron: "0 5 * * 1"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "ruff>=0.6"
+      - run: ruff check .
+      - run: ruff format --check .
+
+  test:
+    # Ohne Mikroptim: Einheiten- und App-Tests (Integrationstests werden abgewählt).
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+        python: ["3.10", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest
+
+  integration:
+    # Mit Mikroptim: CPU-Wheel aus Mikroptim main bauen (gecacht pro Commit), Integrationstests.
+    # Die CI hat keine GPU; GPU-Pfade werden lokal auf dem Server geprüft (AGENTS.md).
+    name: Integration mit Mikroptim main
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mikroptim auschecken
+        uses: actions/checkout@v4
+        with:
+          repository: PhotonPower/Mikroptim
+          path: Mikroptim
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Commit von Mikroptim
+        id: mko
+        run: echo "sha=$(git -C Mikroptim rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Wheel-Cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: Mikroptim/dist
+          key: mikroptim-wheel-${{ steps.mko.outputs.sha }}-py312-ubuntu2404
+      - name: Mikroptim-Wheel bauen (CPU)
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: Mikroptim
+        run: python -m pip wheel . -w dist --no-deps
+      - name: Installieren
+        run: |
+          python -m pip install -e ".[dev]"
+          python -m pip install --no-index --find-links Mikroptim/dist mikroptim
+      - name: Integrationstests
+        env:
+          MKO_GUI_MIKROPTIM_REPO: ${{ github.workspace }}/Mikroptim
+        run: python -m pytest -m integration

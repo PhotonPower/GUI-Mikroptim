@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Streamlit: lokale Geheimnisse nie committen
+.streamlit/secrets.toml
+
+# Arbeitsbereich: Inhalte sind lokal (Uploads, Ergebnisse, Jobs)
+arbeitsbereich/*
+!arbeitsbereich/README.md
+
+# Editoren und Systeme
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

@@ -1,0 +1,59 @@
+{
+  "format": "mikroptim.synth/1",
+  "version": "0.1.0",
+  "input": "frei_erfunden.json",
+  "backend": { "gpu": false },
+  "options": { "target_aperture": 0.5, "beam": { "width": 2, "seed": 7 } },
+  "result": {
+    "status": "goal_reached",
+    "message": "Frei erfundenes Testprotokoll für GUI-Mikroptim",
+    "start_elements": 1,
+    "elements": 2,
+    "insertions": 1,
+    "solves": 3,
+    "goal": { "reached": true, "target_waves": 0.07, "max_rms_waves": 0.05, "tuples": [] },
+    "seconds": 1.5,
+    "steps": [
+      {
+        "index": 0, "kind": "start", "candidate": 0,
+        "point": { "aperture": 0.3, "field": 1.0, "spectrum": 0 },
+        "delta": 0.01, "branch": null, "stage": null,
+        "lm": { "status": "converged", "iterations": 12, "merit": 0.2, "rms_waves": 0.3,
+                "ghost_sum_mm": 0.0, "failed_rays": 0 },
+        "accepted": true, "action": "advance", "recommendation": null, "operation": null,
+        "elements": 1, "goal": null, "seconds": 0.4
+      },
+      {
+        "index": 1, "kind": "aperture", "candidate": 1,
+        "point": { "aperture": 0.31, "field": 1.0, "spectrum": 0 },
+        "delta": 0.01,
+        "lm": { "status": "max_iterations", "iterations": 500, "merit": 0.1, "rms_waves": 0.2,
+                "ghost_sum_mm": 1e-5, "failed_rays": 0 },
+        "accepted": false, "action": "insert", "recommendation": "A",
+        "operation": "Operator A nach Fläche 2", "elements": 2, "seconds": 0.6
+      },
+      {
+        "index": 2, "kind": "aperture", "candidate": 2,
+        "point": { "aperture": 0.5, "field": 1.0, "spectrum": 0 },
+        "delta": 0.02,
+        "lm": { "status": "converged", "iterations": 30, "merit": 0.002, "rms_waves": null,
+                "ghost_sum_mm": 0.0, "failed_rays": 0 },
+        "accepted": true, "action": "finish", "elements": 2, "seconds": 0.5
+      }
+    ],
+    "beam_search": {
+      "beam_width": 2,
+      "seed": 7,
+      "best": { "id": 2 },
+      "candidates": [
+        { "id": 0, "parent": null, "children": [1, 2], "operation": null, "elements": 1,
+          "rms_waves": 0.3, "status": "expanded" },
+        { "id": 1, "parent": 0, "children": [], "operation": "Operator A \"Zweig +\"", "elements": 2,
+          "rms_waves": 0.2, "status": "discarded" },
+        { "id": 2, "parent": 0, "children": [], "operation": "Operator A Zweig -", "elements": 2,
+          "rms_waves": 0.05, "status": "finished" }
+      ]
+    }
+  },
+  "output": null
+}

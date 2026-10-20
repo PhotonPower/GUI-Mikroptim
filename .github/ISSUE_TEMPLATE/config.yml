@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Fehler oder Wunsch an Mikroptim
+    url: https://github.com/PhotonPower/Mikroptim/issues
+    about: Rechenfehler und fehlende Funktionen von Mikroptim gehören in das Mikroptim-Repository.
