@@ -169,6 +169,9 @@ def detached_popen_kwargs() -> dict[str, Any]:
 def _launch(job_dir: Path, max_jobs: int) -> None:
     env = dict(os.environ)
     env["PYTHONUNBUFFERED"] = "1"
+    # Python-Befehle (z. B. python -m mikroptim) schreiben auch unter Windows UTF-8 in die
+    # umgeleiteten Ausgaben; sonst würden Umlaute in ausgabe.txt in cp1252 landen
+    env["PYTHONUTF8"] = "1"
     env["MKO_GUI_MAX_JOBS"] = str(max_jobs)
     log = (job_dir / ".wrapper.txt").open("ab")
     try:

@@ -15,6 +15,8 @@ def escape(text: str) -> str:
 
 
 def main(path: str) -> int:
+    # Windows-Konsole (cp1252) kennt nicht alle Zeichen der Meldungen
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     root = ET.parse(path).getroot()
     count = 0
     for case in root.iter("testcase"):
