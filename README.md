@@ -6,7 +6,17 @@ Die GUI ist ein **Test- und Auswertecockpit** für den Server, auf dem Mikroptim
 
 ## Status
 
-G0 (Gerüst), G4-T2 (Protokollbrowser für Synthese-Läufe) und G1-T1 (Dateiauswahl mit Upload, aktuelles System) G1-T2 (Systemtabellen und Paraxialdaten, Reparatur der Glaskatalog-Pfade) und G1-T3 (Linsenschnitt) abgeschlossen, damit ist G1 fertig; dazu G2 (Seite „Auswertung“: RMS-Wellenfront, OPD-Karten, Spotdiagramme, PSF, MTF, Strehl und Vergleich zweier Systeme) G4-T1 (Jobverwaltung für lange Läufe), G4-T3 (Synthese als Job mit Formular) G3 (Seite „Optimierung“: Variablen, Optionen, Lauf mit Live-Verlauf, Vorher/Nachher und Speichern). G0: Paketstruktur, Konfiguration, sicherer Dateizugriff im Arbeitsbereich, Lesen der Mikroptim-Protokolle, Startseite mit Status von Mikroptim und GPUs, Platzhalterseiten, Tests, CI, Dokumentation. Die Funktionsseiten folgen nach dem [Meilensteinplan](docs/plan/meilensteine.md): G1 System, G2 Auswertung, G3 Optimierung, G4 Jobs und Synthese, G5 Betrieb.
+Abgeschlossen sind G0 bis G4 des [Meilensteinplans](docs/plan/meilensteine.md):
+
+| Seite | Inhalt |
+|---|---|
+| Start | Status von Mikroptim und GPUs, Verzeichnisse |
+| System | Dateiauswahl und Upload, aktuelles System, Flächentabelle, Spektrum und Felder, Paraxialdaten, Variablen, Linsenschnitt, Reparatur der Glaskatalog-Pfade hochgeladener Dateien |
+| Auswertung | RMS-Wellenfront, OPD-Karten und Spotdiagramme, PSF/MTF/Strehl (skalar und vektoriell), Vergleich zweier Systeme |
+| Optimierung | Variablen und Optionen, Lauf mit Live-Verlauf, Abbruch und Zeitgrenze, Vorher/Nachher, Speichern des Ergebnisses |
+| Jobs und Synthese | Protokollbrowser für `mikroptim.synth/1`, Jobverwaltung für lange Läufe, Synthese als Job, Ergebnisordner von Läufen (z. B. M6-T6) |
+
+Alle angezeigten Zahlen kommen aus Mikroptim und sind gegen dessen Kommandozeile getestet (meist bitgleich). Offen ist G5 (Betrieb auf dem Server, Leistung, Exporte).
 
 ## Schnellstart
 
