@@ -7,7 +7,7 @@ from streamlit.testing.v1 import AppTest
 
 from conftest import needs_uploader
 
-PAGES = ["pages/system.py", "pages/optimierung.py", "pages/synthese.py"]
+PAGES = ["pages/system.py", "pages/synthese.py"]
 
 
 def _run(app_file: Path, page: str | None = None) -> AppTest:
@@ -137,3 +137,9 @@ def test_jobs_tab(app_file: Path, workspace: Path, without_mikroptim):
         assert any("fertig" in c.value for c in at.code)
     finally:
         jobs.cancel(workspace, long.id)
+
+
+def test_optimization_page_without_mikroptim(app_file: Path, workspace: Path, without_mikroptim):
+    at = _run(app_file, "pages/optimierung.py")
+    assert at.title[0].value == "Optimierung"
+    assert any("Mikroptim ist nicht nutzbar" in w.value for w in at.warning)

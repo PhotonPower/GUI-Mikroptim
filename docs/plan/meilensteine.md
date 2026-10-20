@@ -83,7 +83,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ## G3 – Optimierung
 
-### G3-T1 – Variablen und Optionen
+### G3-T1 – Variablen und Optionen ✅
 - **Abhängig von:** G1-T2
 - **Inhalt:** Variablen mit Schranken und Startwerten anzeigen (`System.variables()`); Optionen von `optimize` (Iterationen, Ringe/Speichen, Läufe, Störung, Seed, Jacobi `fd`/`adjoint`, GPU) als Formular mit Standardwerten aus der Mikroptim-Doku.
 - **Abnahme:** Formular erzeugt genau die Argumente, die ein Test erwartet; ungültige Kombinationen (GPU ohne CUDA) sind nicht wählbar.
