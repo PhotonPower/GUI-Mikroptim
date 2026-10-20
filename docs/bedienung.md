@@ -47,9 +47,25 @@ Erster Reiter der Seite: Schnitt des Systems in der y-z-Ebene im Maßstab 1:1, g
 
 Strahlen folgen, sobald Mikroptim Strahlpfade liefert (Wunsch W1 in docs/schnittstelle-mikroptim.md).
 
-## Auswertung (G2, geplant)
+## Auswertung
 
-Für das gewählte System: RMS-Wellenfront in Wellen pro Feld und Wellenlänge als Tabelle und Heatmap, OPD-Karten, Spotdiagramme, PSF, MTF und Strehl. Einstellungen (Ringe, Speichen, Raster, Referenz, GPU, df64) stehen über den Ergebnissen und werden mit angezeigt. Ein zweites System kann zum Vergleich gewählt werden.
+Braucht Mikroptim. Oben steht dieselbe Dateiauswahl wie auf der Seite „System“; vorausgewählt ist das aktuelle System, und eine Auswahl hier wird ebenso zum aktuellen System. Ladefehler erscheinen mit JSON-Pfad; die Reparatur von Glaskatalog-Pfaden gibt es auf der Seite „System“.
+
+### RMS-Wellenfront (G2-T1)
+
+Rechnet `mikroptim.trace` für das gewählte System, sobald sich Datei oder Einstellungen ändern. Ergebnisse werden pro Datei, Dateistand und Einstellungen zwischengespeichert, ein Zurückschalten rechnet also nicht neu.
+
+- **Einstellungen:** Ringe und Speichen der Pupillenquadratur (Standard 10 × 8 wie in Mikroptim). Nur mit CUDA-Build und nutzbarem Gerät: Schalter „GPU“, bei mehreren Karten die Gerätewahl, und die Genauigkeit `fp64` oder `df64`. Die CPU rechnet immer in FP64.
+- **Kopfzeile:** RMS in Wellen bei λ_ref, Quadratur, Backend (mit Gerätename) und Genauigkeit, Sollbrennweite der Bildpunkte. Darunter größter und kleinster RMS-Wert, Zahl der Strahlen und der versagten Strahlen; gibt es versagte Strahlen, erscheint ein Hinweis.
+- **Heatmap** Feld × Wellenlänge: Zeilen sind die Felder mit Feldwinkel, Spalten die Wellenlängen (λ_ref markiert); jede Zelle trägt den RMS-Wert, Zellen mit versagten Strahlen „⚠ n versagt“, Zellen ohne gültigen Strahl „–“.
+- **Tabelle** (aufklappbar): pro Feld und Wellenlänge Pupillenmodus, Strahlen, versagte Strahlen, RMS in Wellen und mm, Kolben, Bildpunkt; Reihenfolge und Werte wie das Feld `wavefront` von `mikroptim trace --json`.
+- **Nachrechnen:** Die letzte Zeile nennt den passenden Befehl `mikroptim trace … --json` mit denselben Optionen.
+
+Fehler von Mikroptim erscheinen als Meldung, z. B. bei afokalen Systemen ohne `target.focal_length` (`ValueError: Wellenfront: Sollbrennweite ist nicht endlich …`) oder wenn die GPU nicht verfügbar ist (`GpuUnavailableError`).
+
+### OPD-Karten, Spots, PSF, MTF, Strehl, Vergleich (G2-T2 bis G2-T4, geplant)
+
+OPD-Karten, Spotdiagramme, PSF, MTF und Strehl; ein zweites System zum Vergleich.
 
 ## Optimierung (G3, geplant)
 

@@ -7,7 +7,7 @@ from streamlit.testing.v1 import AppTest
 
 from conftest import needs_uploader
 
-PAGES = ["pages/system.py", "pages/auswertung.py", "pages/optimierung.py", "pages/synthese.py"]
+PAGES = ["pages/system.py", "pages/optimierung.py", "pages/synthese.py"]
 
 
 def _run(app_file: Path, page: str | None = None) -> AppTest:
@@ -98,3 +98,9 @@ def test_protocol_upload(app_file: Path, workspace: Path, test_data: Path, witho
     ).run()
     assert any("Upload abgelehnt" in e.value for e in at.error)
     assert not (workspace / "uploads" / "s.json").exists()
+
+
+def test_evaluation_page_without_mikroptim(app_file: Path, workspace: Path, without_mikroptim):
+    at = _run(app_file, "pages/auswertung.py")
+    assert at.title[0].value == "Auswertung"
+    assert any("Mikroptim ist nicht nutzbar" in w.value for w in at.warning)

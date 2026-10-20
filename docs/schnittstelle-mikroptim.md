@@ -23,7 +23,7 @@ Mikroptim hat noch keine Releases. Bis dahin gilt: Die CI baut bei jedem Lauf da
 | `System.from_json(text, base_dir)`, `System.save(path)` | G1-T2 | Glaskatalog-Pfade hochgeladener Dateien reparieren (`save` passt `glass_catalogs` an den neuen Ort an) |
 | `system_to_dict` | G1-T2, G3 | Materialmodelle, Dezentrierung/Verkippung, Kommentare, `constraints`, `ghost_plates`, JSON-Ansicht |
 | `paraxial(system)` → `Paraxial.to_dict()` | G1-T2 | Paraxialdaten; bei afokalen Systemen `afocal: true` und Brennweite/Schnittweiten `None` (wie die CLI) |
-| `trace(system, rings, spokes, gpu, device, precision)` → `Wavefront` | G2-T1 | RMS pro Feld und Wellenlänge, versagte Strahlen |
+| `trace(system, rings, spokes, gpu, device, precision)` → `Wavefront` | G2-T1 | `rms_waves` (Wellen bei λ_ref), `rms_mm`, `piston_mm`, `rays`, `failed` [Feld, Wellenlänge]; `image_points`, `pupil_modes`, `wavelengths_nm`, `reference_nm`, `target_focal_length`, `backend`, `device_name`, `precision`, `rings`, `spokes`. Fehler: `ValueError` bei afokalen Systemen ohne `target.focal_length` und bei `precision="df64"` ohne GPU, `GpuUnavailableError` ohne CUDA/Gerät. Bitgleich zu `mikroptim trace --json` (Integrationstest, vier Systeme) |
 | `evaluate(system, grid, half, reference, gpu, …)` → `Evaluation` | G2-T2 | `stats`, `opd_map`, `spots`, `pupil_points` |
 | `Evaluation.psf(f, l, padding, numerical_aperture, gpu)` → `Psf` | G2-T3 | PSF, MTF-Schnitte, Strehl |
 | `optimize(system, …, jacobian, callback)` → `OptimizeResult` | G3 | Optimierung mit Live-Verlauf; `result.system.save(path)` |

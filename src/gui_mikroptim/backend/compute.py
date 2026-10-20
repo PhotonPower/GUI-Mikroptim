@@ -85,3 +85,104 @@ def repair_catalogs(path: Path, base_dir: Path, workspace: Path) -> Path:
     target = files.unique_path(directory, f"{path.stem}-kataloge.json")
     system.save(str(target))
     return target
+
+
+# --- Wellenfront (G2-T1) -----------------------------------------------------------------------
+
+PRECISIONS = ("fp64", "df64")
+
+
+@dataclass(frozen=True)
+class TraceOptions:
+    """Optionen von ``mikroptim.trace`` (Standardwerte wie in Mikroptim)."""
+
+    rings: int = 10
+    spokes: int = 8
+    gpu: bool = False
+    device: int = 0
+    precision: str = "fp64"
+
+    def validate(self) -> None:
+        if not 1 <= self.rings <= 256:
+            raise ValueError(f"Ringe müssen zwischen 1 und 256 liegen, nicht {self.rings}")
+        if not 1 <= self.spokes <= 256:
+            raise ValueError(f"Speichen müssen zwischen 1 und 256 liegen, nicht {self.spokes}")
+        if self.precision not in PRECISIONS:
+            raise ValueError(f"Genauigkeit {self.precision!r} unbekannt")
+        if self.precision != "fp64" and not self.gpu:
+            raise ValueError(f'precision="{self.precision}" nur mit GPU (die CPU rechnet in FP64)')
+
+    def cli_args(self) -> list[str]:
+        """Dieselben Optionen für ``mikroptim trace`` (zum Nachrechnen auf der Kommandozeile)."""
+        args = ["--rings", str(self.rings), "--spokes", str(self.spokes)]
+        if self.gpu:
+            args += ["--gpu", "--device", str(self.device), "--precision", self.precision]
+        return args
+
+    def label(self) -> str:
+        backend = f"GPU {self.device}, {self.precision}" if self.gpu else "CPU, fp64"
+        return f"{self.rings} Ringe × {self.spokes} Speichen, {backend}"
+
+
+@dataclass(frozen=True)
+class WavefrontResult:
+    """Ergebnis von ``mikroptim.trace`` als NumPy-Arrays [Feld, Wellenlänge] (picklebar)."""
+
+    rms_waves: Any
+    rms_mm: Any
+    piston_mm: Any
+    rays: Any
+    failed: Any
+    image_points: Any  # [Feld, 3] in mm
+    pupil_modes: list[str]
+    wavelengths_nm: Any
+    reference_nm: float
+    target_focal_length: float | None
+    backend: str
+    device_name: str
+    precision: str
+    rings: int
+    spokes: int
+
+    @property
+    def total_rays(self) -> int:
+        return int(self.rays.sum())
+
+    @property
+    def total_failed(self) -> int:
+        return int(self.failed.sum())
+
+
+def trace_wavefront(system: Any, options: TraceOptions) -> WavefrontResult:
+    """``mikroptim.trace``; Ausnahmen (``ValueError`` bei afokalen Systemen,
+    ``GpuUnavailableError``, ``CudaError``) werden durchgereicht."""
+    import numpy as np
+
+    options.validate()
+    m = mko.require()
+    w = m.trace(
+        system,
+        rings=options.rings,
+        spokes=options.spokes,
+        gpu=options.gpu,
+        device=options.device,
+        precision=options.precision,
+    )
+    target = getattr(w, "target_focal_length", None)
+    return WavefrontResult(
+        rms_waves=np.array(w.rms_waves, dtype=float),
+        rms_mm=np.array(w.rms_mm, dtype=float),
+        piston_mm=np.array(w.piston_mm, dtype=float),
+        rays=np.array(w.rays, dtype=int),
+        failed=np.array(w.failed, dtype=int),
+        image_points=np.array(w.image_points, dtype=float),
+        pupil_modes=list(w.pupil_modes),
+        wavelengths_nm=np.array(w.wavelengths_nm, dtype=float),
+        reference_nm=float(w.reference_nm),
+        target_focal_length=None if target is None else float(target),
+        backend=str(w.backend),
+        device_name=str(getattr(w, "device_name", "") or ""),
+        precision=str(w.precision),
+        rings=int(w.rings),
+        spokes=int(w.spokes),
+    )
