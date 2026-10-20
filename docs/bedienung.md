@@ -10,7 +10,7 @@ Zeigt, ob Mikroptim geladen werden kann (Version, CPU- oder CUDA-Build, GPUs mit
 
 ### Datei wählen und hochladen (G1-T1)
 
-1. **Quelle:** „Beispielsysteme (Mikroptim)“ (`data/systems` im Checkout, nur mit `MKO_GUI_MIKROPTIM_REPO`), „Uploads“ oder „Ergebnisse“ im Arbeitsbereich. Angeboten werden nur Systemdateien (`mikroptim.system/1`); Glaskataloge und andere Formate im selben Ordner erscheinen nicht.
+1. **Quelle:** „Beispielsysteme (Mikroptim)“ (`data/systems` im Checkout, nur mit `MKO_GUI_MIKROPTIM_REPO`), „Uploads“, „Ergebnisse“ oder „Jobergebnisse“ (Jobordner, z. B. `ergebnis.json` einer Synthese) im Arbeitsbereich. Angeboten werden nur Systemdateien (`mikroptim.system/1`); Glaskataloge und andere Formate im selben Ordner erscheinen nicht.
 2. **Datei:** Die Auswahl gilt als **aktuelles System** für alle Seiten und steht in der Seitenleiste. Beim nächsten Besuch der Seite ist sie wieder ausgewählt.
 3. **Hochladen:** unter „Datei hochladen“ eine `.json`-Datei wählen. Sie wird geprüft (JSON, Feld `format`, Systembeschreibung in Hauptversion 1, höchstens 20 MB, UTF-8) und unter `uploads/` gespeichert. Ein vorhandener Name wird nie überschrieben: Die zweite `linse.json` heißt `linse-2.json`. Nach dem Speichern ist die neue Datei sofort ausgewählt. Abgelehnte Dateien werden nicht gespeichert; die Meldung nennt den Grund.
 
@@ -116,6 +116,21 @@ Zeigt Protokolle von `mikroptim synth … --log datei.json` (Format `mikroptim.s
 
 Die GUI rechnet dabei nichts nach: Alle Werte stehen so im Protokoll. `null` im Protokoll (nicht endliche Zahl) erscheint als Lücke bzw. „–“.
 
+### Reiter „Neue Synthese“ (G4-T3)
+
+Startet `mikroptim synth` als Job.
+
+1. **Startsystem** wählen (vorausgewählt das aktuelle System; Quellen wie auf „System“, dazu „Jobergebnisse“, also Ergebnisse früherer Läufe). Es wird in den Jobordner kopiert; Mikroptim schreibt die Kopie neu, damit die Glaskataloge von dort gefunden werden.
+2. **Optionen** wie in Mikroptim (`docs/cli.md`, „mikroptim synth“), mit denselben Standardwerten:
+   - **Ziel:** Ziel-NA (0: NA des Starts), Feldanteil am Start und am Ende (0: wie am Start), RMS-Ziel in Wellen (Standard 1/14), Merit-Faktor K.
+   - **Homotopie und LM:** Schrittweite Δ₀, Δ_min, Δ_max, Sattel-Δ, höchstens so viele Optimierungen, LM-Zyklen pro Schritt, Ringe und Speichen, Krümmungsschranke (0: offen).
+   - **Einfügen (Operator A):** höchstens so viele Glaselemente, Mittendicke, maximale Dicke, Dickenstufen, kleinster Luftspalt.
+   - **Strahlsuche:** Breite (0: aus), Alternativen, gestörte Starts, Störung, Seed, Duplikat-Schwelle, FP32-Vorfilter.
+   - **Rechnen:** Jacobi-Matrix `fd` oder `adjoint`; GPU und Gerät nur mit CUDA-Build und Gerät.
+3. **„Synthese starten“** legt den Job an; er startet, sobald ein Platz frei ist, und ist danach im Reiter „Jobs“ vorausgewählt.
+
+Im Befehl stehen nur Optionen, die vom Standard abweichen, dazu `-o ergebnis.json --log protokoll.json` und bei Strahlsuche `--dot stammbaum.dot`; alle Werte stehen zusätzlich in `job.json`. Gleiche Eingabe und gleiche Optionen (einschließlich Seed) ergeben dasselbe Protokoll.
+
 ### Reiter „Jobs“ (G4-T1)
 
 Lange Läufe (Synthese, Multistart, große Auswertungen) laufen als Jobs in eigenen Prozessen; sie laufen weiter, wenn der Browser geschlossen oder die GUI neu gestartet wird. Jobs entstehen aus Formularen der GUI (Synthese ab G4-T3).
@@ -125,5 +140,7 @@ Lange Läufe (Synthese, Multistart, große Auswertungen) laufen als Jobs in eige
 - **Details** des gewählten Jobs: Status, Dauer, Exit-Code, Mikroptim-Version, Zeiten und Ordner; der **Befehl** zum Wiederholen von Hand (im Jobordner auszuführen); Eingaben; die letzten 200 Zeilen von Ausgabe und Fehlerausgabe; Optionen. Solange der Job läuft, aktualisiert sich die Ansicht alle 2 Sekunden selbst.
 - **Abbrechen:** beendet den Befehl samt aller Kindprozesse, der Status wird „abgebrochen“; ein wartender Job wird gar nicht erst gestartet.
 - „fehler“ mit dem Hinweis „Wrapper-Prozess nicht mehr vorhanden“ heißt: Der Job lief, als der Rechner neu gestartet oder der Prozess von außen beendet wurde.
+
+Bei **Synthese-Jobs** stehen nach dem Ende zusätzlich das Protokoll (wie im Reiter „Protokolle“) und zwei Knöpfe in den Details: „Ergebnis als aktuelles System übernehmen“ (dann auf „System“ oder „Auswertung“ ansehen) und „Im Reiter Protokolle öffnen“. Während des Laufs steht die letzte Zeile der Ausgabe darunter.
 
 Die Dateien eines Jobs liegen unter `jobs/` im Arbeitsbereich (Aufbau: docs/architektur.md, „Jobs“); Synthese-Protokolle aus Jobs erscheinen im Reiter „Protokolle“ unter der Quelle „Arbeitsbereich“.

@@ -115,7 +115,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** Protokoll wählen (Arbeitsbereich, Jobordner, Mikroptim-Checkout z. B. `docs/ergebnisse/`); Kopfzeile aus `SynthProtocol.summary()`; Schritttabelle mit Filter (Art, angenommen, Aktion); Verlauf über die Schritte (NA, Feld, Spektrum, RMS, Elemente; Einfügungen als Marker); Stammbaum über `candidate_tree_dot`, oder die mitgelieferte DOT-Datei; Ziel-Tupel (`result.goal.tuples`) als Tabelle.
 - **Abnahme:** Testprotokoll `tests/daten/synth_beispiel.json` und ein echtes Protokoll aus Mikroptim (Integrationstest, falls vorhanden) werden ohne Ausnahme dargestellt; Screenshot mit einem Lauf aus M6-T6.
 
-### G4-T3 – Synthese-Job
+### G4-T3 – Synthese-Job ✅
 - **Abhängig von:** G4-T1, G1-T1
 - **Inhalt:** Formular für `mikroptim synth` (Startsystem, Ziel-NA, Strahlbreite, Seed, Alternativen, Starts, Vorfilter, GPU, Jacobi); Start als Job mit `--log` und `--dot`; Fortschritt aus der Textausgabe; nach Ende direkt in den Protokollbrowser.
 - **Abnahme:** Kurzer Synthese-Lauf (z. B. `einzellinse_homotopie_start.json` mit kleiner Ziel-NA) als Integrationstest; Protokoll gleich einem Lauf von Hand mit dem gespeicherten Befehl (ohne `seconds`).

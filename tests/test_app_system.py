@@ -132,7 +132,7 @@ def test_wrong_upload_rejected(app_file, workspace, fake_repo, without_mikroptim
 def test_without_repo_only_workspace_sources(app_file, workspace, without_mikroptim, monkeypatch):
     monkeypatch.delenv("MKO_GUI_MIKROPTIM_REPO", raising=False)
     at = _system_page(app_file)
-    assert at.selectbox(key="system.quelle").options == ["Uploads", "Ergebnisse"]
+    assert at.selectbox(key="system.quelle").options == ["Uploads", "Ergebnisse", "Jobergebnisse"]
 
 
 def test_lens_section_without_mikroptim(app_file, workspace, fake_repo, without_mikroptim):
@@ -140,3 +140,17 @@ def test_lens_section_without_mikroptim(app_file, workspace, fake_repo, without_
     charts = at.get("plotly_chart")
     assert len(charts) == 1
     assert any("ungeprüft aus der Datei" in w.value for w in at.warning)
+
+
+@needs_uploader
+def test_picker_does_not_override_current_set_elsewhere(
+    app_file, workspace, fake_repo, without_mikroptim
+):
+    at = _system_page(app_file)
+    _file_box(at).select_index(0).run()
+    beta = str(fake_repo / "data" / "systems" / "beta.json")
+    at.session_state["aktuell.datei"] = beta  # z. B. „Ergebnis übernehmen“ auf einer anderen Seite
+    at.run()
+    assert at.session_state["aktuell.datei"] == beta
+    _file_box(at).select_index(0).run()  # unveränderte Auswahl ändert nichts
+    assert at.session_state["aktuell.datei"] == beta
