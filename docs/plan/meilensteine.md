@@ -88,7 +88,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** Variablen mit Schranken und Startwerten anzeigen (`System.variables()`); Optionen von `optimize` (Iterationen, Ringe/Speichen, Läufe, Störung, Seed, Jacobi `fd`/`adjoint`, GPU) als Formular mit Standardwerten aus der Mikroptim-Doku.
 - **Abnahme:** Formular erzeugt genau die Argumente, die ein Test erwartet; ungültige Kombinationen (GPU ohne CUDA) sind nicht wählbar.
 
-### G3-T2 – Lauf mit Live-Verlauf
+### G3-T2 – Lauf mit Live-Verlauf ✅
 - **Abhängig von:** G3-T1
 - **Inhalt:** `optimize(..., callback=...)`; Merit-Verlauf (log) und aktueller Zyklus live; Knopf „Abbrechen“ über Ausnahme im Rückruf; Laufzeitgrenze, danach Hinweis auf Job (G4).
 - **Abnahme:** Ergebnis identisch zu `mikroptim optimize` mit denselben Optionen (Merit bitgleich, Test auf `einzellinse_bk7_biegung.json`); Abbruch hinterlässt einen nutzbaren Zustand und eine Meldung.

@@ -107,9 +107,18 @@ Braucht Mikroptim. Dateiauswahl wie auf „System“, vorausgewählt das aktuell
 - **Optionen** wie `mikroptim optimize`, mit denselben Standardwerten: Zyklen pro Lauf (100; 0 wertet nur den Startpunkt aus), Ringe und Speichen (10 × 8), Jacobi-Matrix `fd` oder `adjoint`, Läufe für den Multistart (1), relative Störung (0,05) und Seed (0) – beide nur mit mindestens 2 Läufen einstellbar –, hartes Strahlversagen, eigenes Strafgewicht w_fail (nur beim weichen Strahlversagen), GPU und Gerät nur mit CUDA-Build und Gerät.
 - Darunter steht der entsprechende Befehl `mikroptim optimize … --json` mit genau diesen Optionen (nur Abweichungen vom Standard).
 
-### Lauf, Ergebnis und Speichern (G3-T2, G3-T3, geplant)
+### Lauf (G3-T2)
 
-Starten, Merit-Verlauf live verfolgen, abbrechen. Das Ergebnis wird als neue Datei unter `ergebnisse/` gespeichert, die Eingabe nie überschrieben. Vorher/Nachher als Tabelle und Wellenfront.
+- **Zeitgrenze** (Standard 60 s) und **„Optimierung starten“**: `mikroptim.optimize` läuft direkt in der Seite. Währenddessen stehen Lauf, Zyklus, aktuelle und beste Merit darüber, und der Merit-Verlauf wird laufend gezeichnet (logarithmisch, eine Kurve pro Lauf des Multistarts, abgelehnte Versuchsschritte als Kreuze).
+- **„Abbrechen“** unterbricht den Lauf; die bis dahin gerechneten Zyklen bleiben als Verlauf stehen, das System ist unverändert. Jede andere Eingabe auf der Seite während des Laufs unterbricht ihn ebenso (Streamlit führt die Seite dann neu aus); das wird als „unterbrochen“ gemeldet.
+- **Zeitgrenze erreicht:** Hinweis und Knopf „Als Job rechnen“ – dieselbe Optimierung läuft dann als Job (`mikroptim optimize … --json -o ergebnis.json`) und ist auf der Seite „Jobs und Synthese“ zu verfolgen.
+- **Ergebnis:** Status von Mikroptim, Zyklen und Laufzeit, Merit am Start und am Ende, Zahl der Läufe und bester Lauf, Tabelle der Variablen (Start, Ende, Änderung), Warnungen und der Verlauf. Das Ergebnis bleibt in der Sitzung, solange Datei und Optionen gleich bleiben; nach einer Änderung steht ein Hinweis.
+
+Das Ergebnis ist gleich dem von `mikroptim optimize` mit denselben Optionen (Merit bitgleich).
+
+### Ergebnis speichern (G3-T3, geplant)
+
+Vorher/Nachher als Wellenfront; Speichern als neue Datei unter `ergebnisse/`, die Eingabe nie überschrieben.
 
 ## Jobs und Synthese
 

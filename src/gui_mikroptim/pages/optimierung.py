@@ -1,4 +1,4 @@
-"""Seite „Optimierung“: Variablen und Optionen (G3-T1); Lauf und Ergebnis folgen (G3-T2, G3-T3)."""
+"""Seite „Optimierung“: Variablen und Optionen (G3-T1), Lauf mit Live-Verlauf (G3-T2)."""
 
 from __future__ import annotations
 
@@ -29,7 +29,5 @@ if entry is not None:
         st.markdown("**Optionen**")
         options = optimize_view.options_form(status)
         optimize_view.command_caption(entry, options)
-        st.info(
-            "Lauf mit Live-Verlauf und Speichern des Ergebnisses folgen mit G3-T2 und G3-T3 "
-            "(docs/plan/meilensteine.md)."
-        )
+        st.markdown("**Lauf**")
+        optimize_view.run_section(cfg, entry, system, options)
