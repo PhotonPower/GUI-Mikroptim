@@ -120,7 +120,7 @@ def test_jobs_tab(app_file: Path, workspace: Path, without_mikroptim):
     try:
         at = _run(app_file, "pages/synthese.py")
         assert any(m.label == "laufend" and m.value == "1 / 1" for m in at.metric)
-        table = at.dataframe[-1].value
+        table = next(d.value for d in at.dataframe if "Job" in d.value.columns)
         assert set(table["Job"]) == {done.id, long.id}
         box = at.selectbox(key="jobs.auswahl")
         assert box.value == long.id  # neuester zuerst
@@ -143,3 +143,18 @@ def test_optimization_page_without_mikroptim(app_file: Path, workspace: Path, wi
     at = _run(app_file, "pages/optimierung.py")
     assert at.title[0].value == "Optimierung"
     assert any("Mikroptim ist nicht nutzbar" in w.value for w in at.warning)
+
+
+def test_folder_tab_with_job_folder(
+    app_file: Path, workspace: Path, test_data: Path, without_mikroptim
+):
+    job = workspace / "jobs" / "20261020-120000-synth"
+    job.mkdir(parents=True)
+    (job / "protokoll.json").write_bytes((test_data / "synth_beispiel.json").read_bytes())
+    (job / "ausgabe.txt").write_text("Zeile 1\nZeile 2", encoding="utf-8")
+    at = _run(app_file, "pages/synthese.py")
+    assert at.selectbox(key="ordner.auswahl").value == "Job: 20261020-120000-synth"
+    assert {m.label: m.value for m in at.metric}["Protokoll"] == "1"
+    at.selectbox(key="ordner.weitere").set_value("ausgabe.txt (Text)").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert any("Zeile 2" in c.value for c in at.code)

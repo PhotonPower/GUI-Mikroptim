@@ -100,7 +100,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ---
 
-## G4 – Jobs und Synthese
+## G4 – Jobs und Synthese ✅
 
 ### G4-T1 – Jobverwaltung ✅
 - **Abhängig von:** G0
@@ -120,7 +120,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** Formular für `mikroptim synth` (Startsystem, Ziel-NA, Strahlbreite, Seed, Alternativen, Starts, Vorfilter, GPU, Jacobi); Start als Job mit `--log` und `--dot`; Fortschritt aus der Textausgabe; nach Ende direkt in den Protokollbrowser.
 - **Abnahme:** Kurzer Synthese-Lauf (z. B. `einzellinse_homotopie_start.json` mit kleiner Ziel-NA) als Integrationstest; Protokoll gleich einem Lauf von Hand mit dem gespeicherten Befehl (ohne `seconds`).
 
-### G4-T4 – Ergebnisordner
+### G4-T4 – Ergebnisordner ✅
 - **Abhängig von:** G4-T2
 - **Inhalt:** einen Ordner mit Stufenergebnissen (wie `docs/ergebnisse/m6-t6/` in Mikroptim) als Lauf darstellen: Stufen, Systemdateien, Bewertungen; Sprung in System, Auswertung und Vergleich.
 - **Abnahme:** Ordner von M6-T6 (nach Merge in Mikroptim) vollständig navigierbar; Screenshot.
