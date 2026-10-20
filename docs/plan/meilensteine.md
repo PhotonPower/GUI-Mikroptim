@@ -109,7 +109,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
   - Ein laufender Job überlebt einen Neustart der GUI und wird danach korrekt angezeigt.
   - Linux und Windows (CI), Abbruch unter Windows über `CTRL_BREAK_EVENT` oder `taskkill /T`.
 
-### G4-T2 – Protokollbrowser `mikroptim.synth/1`
+### G4-T2 – Protokollbrowser `mikroptim.synth/1` ✅
 - **Abhängig von:** G0
 - **Inhalt:** Protokoll wählen (Arbeitsbereich, Jobordner, Mikroptim-Checkout z. B. `docs/ergebnisse/`); Kopfzeile aus `SynthProtocol.summary()`; Schritttabelle mit Filter (Art, angenommen, Aktion); Verlauf über die Schritte (NA, Feld, Spektrum, RMS, Elemente; Einfügungen als Marker); Stammbaum über `candidate_tree_dot`, oder die mitgelieferte DOT-Datei; Ziel-Tupel (`result.goal.tuples`) als Tabelle.
 - **Abnahme:** Testprotokoll `tests/daten/synth_beispiel.json` und ein echtes Protokoll aus Mikroptim (Integrationstest, falls vorhanden) werden ohne Ausnahme dargestellt; Screenshot mit einem Lauf aus M6-T6.
