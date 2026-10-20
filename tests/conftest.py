@@ -68,10 +68,14 @@ def pytest_runtest_logreport(report):
     """In GitHub Actions jeden Fehlschlag zusätzlich als Annotation ausgeben (über die API
     lesbar, ohne Log-Download)."""
     import os
+    import sys
 
     if not os.environ.get("GITHUB_ACTIONS") or not report.failed:
         return
     text = str(report.longrepr)[-3000:]
     text = text.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
     title = report.nodeid.replace(":", "_").replace(",", "_")[:200]
-    print(f"\n::error title={title}::{text}", flush=True)
+    stream = sys.__stdout__
+    if stream is not None:  # an pytest vorbei, sonst landet die Zeile in der Erfassung
+        stream.write(f"\n::error title={title}::{text}\n")
+        stream.flush()
