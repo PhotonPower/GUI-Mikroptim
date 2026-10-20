@@ -37,7 +37,8 @@ Jobs rufen die CLI auf, entweder das Programm `mikroptim` (`MKO_GUI_CLI`) oder `
 
 | Unterbefehl | genutzt in | Ausgabe, die die GUI liest |
 |---|---|---|
-| `synth … --log <datei> [--dot <datei>]` | G4-T3 | `mikroptim.synth/1`, DOT |
+| `synth <start> [Optionen] -o ergebnis.json --log protokoll.json [--dot stammbaum.dot]` | G4-T3 | Systemdatei, `mikroptim.synth/1`, DOT; Optionen und Standardwerte aus `docs/cli.md` in `synth_job.SynthOptions`. Integrationstest: Job und Lauf von Hand mit dem gespeicherten Befehl ergeben dasselbe Protokoll (ohne `seconds`) |
+| `System.save(path)` | G4-T3 | Startsystem in den Jobordner kopieren, Glaskatalog-Pfade relativ zur Kopie |
 | `optimize … --json -o <datei>` | G4 (als Job) | `mikroptim.optimize/1`, Systemdatei |
 | `eval … --json --psf --vector --polarization P --defocus Z --psf-tuple F,L --psf-file … --mtf-file … --component-files …` | G2-T3 | `mikroptim.eval/1` (Feld `vector`), PSF-, MTF- und Komponenten-CSV (erste Zeile = größtes y) |
 | `snap`, `insert` | G4 | `mikroptim.snap/1`, Systemdatei |

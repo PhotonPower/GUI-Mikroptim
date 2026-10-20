@@ -1,13 +1,13 @@
-"""Seite „Jobs und Synthese“: Protokolle von synth (G4-T2), Jobs (G4-T1)."""
+"""Seite „Jobs und Synthese“: Protokolle (G4-T2), Jobs (G4-T1), neue Synthese (G4-T3)."""
 
 import streamlit as st
 
-from gui_mikroptim.views import common, file_picker, jobs_view, synth_view
+from gui_mikroptim.views import common, file_picker, jobs_view, synth_form_view, synth_view
 
 cfg = common.settings_or_stop()
 st.title("Jobs und Synthese")
 
-tab_protocols, tab_jobs = st.tabs(["Protokolle", "Jobs"])
+tab_protocols, tab_jobs, tab_new = st.tabs(["Protokolle", "Jobs", "Neue Synthese"])
 
 with tab_protocols:
     entry = file_picker.pick_document(
@@ -26,7 +26,7 @@ with tab_protocols:
 
 with tab_jobs:
     jobs_view.render(cfg)
-    st.caption(
-        "Als Nächstes (docs/plan/meilensteine.md): `G4-T3` Synthese-Job mit Formular, "
-        "`G4-T4` Ergebnisordner von Läufen."
-    )
+
+with tab_new:
+    synth_form_view.render(cfg)
+    st.caption("Als Nächstes (docs/plan/meilensteine.md): `G4-T4` Ergebnisordner von Läufen.")

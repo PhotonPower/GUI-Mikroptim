@@ -29,12 +29,13 @@ class Source:
 
 
 def system_sources(cfg: Settings) -> list[Source]:
-    """Quellen für Systemdateien: Beispiele aus Mikroptim, Uploads, Ergebnisse."""
+    """Quellen für Systemdateien: Beispiele aus Mikroptim, Uploads, Ergebnisse, Jobordner."""
     result = []
     if cfg.example_systems_dir is not None:
         result.append(Source("Beispielsysteme (Mikroptim)", cfg.example_systems_dir))
     result.append(Source("Uploads", cfg.workspace / uploads.UPLOAD_SUBDIR))
     result.append(Source("Ergebnisse", cfg.workspace / "ergebnisse"))
+    result.append(Source("Jobergebnisse", cfg.workspace / "jobs"))
     return result
 
 
@@ -184,5 +185,11 @@ def pick_document(
             st.caption(empty_hint)
         return None
     if remember:
-        current.set_path(entry.path)
+        # Nur bei einer Änderung dieser Auswahl übernehmen: Sonst würde ein Wähler bei jedem
+        # Lauf ein anderswo gesetztes aktuelles System (z. B. „Ergebnis übernehmen“) überschreiben.
+        last_key = f"{key}.zuletzt"
+        chosen = str(entry.path)
+        if st.session_state.get(last_key) != chosen:
+            st.session_state[last_key] = chosen
+            current.set_path(entry.path)
     return entry

@@ -6,8 +6,9 @@ import datetime as dt
 
 import streamlit as st
 
-from gui_mikroptim.backend import jobs
+from gui_mikroptim.backend import jobs, synth_job
 from gui_mikroptim.config import Settings
+from gui_mikroptim.views import current, file_picker, synth_view
 
 KEY = "jobs"
 REFRESH_SECONDS = 2.0
@@ -98,6 +99,32 @@ def _details(cfg: Settings, job_id: str) -> None:
     if job.data.get("options"):
         with st.expander("Optionen"):
             st.json(job.data["options"])
+    if job.data.get("kind") == "synth":
+        _synth_results(job)
+
+
+def _synth_results(job: jobs.Job) -> None:
+    """Ergebnisse eines Synthese-Jobs: Protokoll direkt, Übernahme des Ergebnisses (G4-T3)."""
+    found = synth_job.outputs(job)
+    if not job.final:
+        last = job.tail(jobs.STDOUT_FILE, lines=1)
+        if last:
+            st.caption(f"Letzte Zeile der Ausgabe: `{last}`")
+        return
+    c1, c2 = st.columns(2)
+    if "ergebnis" in found and c1.button(
+        "Ergebnis als aktuelles System übernehmen", key=f"{KEY}.uebernehmen.{job.id}"
+    ):
+        current.set_path(found["ergebnis"])
+        st.toast(f"Aktuelles System: {found['ergebnis'].name} aus {job.id}")
+    if "protokoll" in found:
+        if c2.button("Im Reiter „Protokolle“ öffnen", key=f"{KEY}.protokoll.{job.id}"):
+            file_picker.select_on_next_run("synthese.protokoll", found["protokoll"], False)
+            st.rerun()
+        with st.expander("Protokoll der Synthese", expanded=True):
+            synth_view.render(found["protokoll"], key=f"{KEY}.synth.{job.id}")
+    elif job.status == jobs.DONE:
+        st.warning("Job fertig, aber kein protokoll.json gefunden.")
 
 
 def render(cfg: Settings) -> None:
@@ -120,13 +147,16 @@ def render(cfg: Settings) -> None:
 
     if not job_list:
         st.info(
-            "Noch keine Jobs. Jobs entstehen aus Formularen der GUI (Synthese ab G4-T3) und "
-            f"liegen unter {jobs.jobs_root(cfg.workspace)}."
+            "Noch keine Jobs. Eine Synthese startet im Reiter „Neue Synthese“; Jobs liegen "
+            f"unter {jobs.jobs_root(cfg.workspace)}."
         )
         return
     st.dataframe(job_rows(job_list), hide_index=True, width="stretch")
 
     ids = [j.id for j in job_list]
+    pending = st.session_state.pop("jobs.auswahl_neu", None)
+    if pending in ids:
+        st.session_state[f"{KEY}.auswahl"] = pending  # vor dem Widget: erlaubt
     job_id = st.selectbox("Job", ids, key=f"{KEY}.auswahl")
     selected = next(j for j in job_list if j.id == job_id)
     live = selected.status in (jobs.WAITING, jobs.RUNNING)
