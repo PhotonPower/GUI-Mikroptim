@@ -64,7 +64,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** `mikroptim.trace` mit Ringen, Speichen, GPU, Genauigkeit (`fp64`/`df64`, nur mit CUDA); Ergebnis als Tabelle und Heatmap Feld × Wellenlänge (Wellen bei λ_ref), versagte Strahlen markiert. Optionen in der Ergebnisüberschrift.
 - **Abnahme:** Zahlen identisch zu `mikroptim trace --json` für zwei Beispielsysteme (Test); GPU-Schalter nur sichtbar mit CUDA-Build und Gerät; `GpuUnavailableError` wird als Meldung gezeigt.
 
-### G2-T2 – EVAL: OPD-Karten und Spots
+### G2-T2 – EVAL: OPD-Karten und Spots ✅
 - **Abhängig von:** G2-T1
 - **Inhalt:** `mikroptim.evaluate` (Raster, halbe/volle Pupille, Referenz Austrittspupille/Scheitel); Auswahl Feld/Wellenlänge; OPD-Karte mit Abzug (keiner, Kippung, Kippung und Defokus), Spotdiagramm, Kennzahlentabelle aus `stats`.
 - **Abnahme:** Figuren-Funktionen getestet (NaN außerhalb der Pupille bleibt leer, Farbskala symmetrisch); Kennzahlen identisch zu `mikroptim eval --json`.

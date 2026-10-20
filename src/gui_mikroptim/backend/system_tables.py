@@ -211,3 +211,52 @@ def wavefront_rows(result: Any, field_angles_deg: Any = None) -> list[dict[str, 
                 }
             )
     return rows
+
+
+def _finite(value: Any) -> float | None:
+    x = float(value)
+    return x if math.isfinite(x) else None
+
+
+def eval_rows(stats: dict[str, Any], reference_nm: float, field_angles_deg: Any = None) -> list:
+    """Kennzahlen von ``Evaluation.stats`` pro (Feld, Wellenlänge) wie ``tuples`` von
+    ``mikroptim eval --json``: OPD in Wellen bei λ_ref, Längen in mm, Verzeichnung in %.
+
+    Nicht endliche Werte (z. B. Verzeichnung auf der Achse) erscheinen als ``None`` wie in der
+    CLI. Strehl nach Maréchal ist nicht enthalten (dafür G2-T3, Strehl über die FFT).
+    """
+    angles = _as_list(field_angles_deg)
+
+    def to_waves(key: str, f: int, j: int) -> float | None:
+        # genau wie mikroptim eval: mm / (λ_ref · 1e-6), bitgleich (compute.mm_to_waves)
+        return _finite(stats[key][f, j] / (reference_nm * 1e-6))
+
+    fields, wavelengths = stats["rms_opd"].shape
+    rows = []
+    for f in range(fields):
+        for j in range(wavelengths):
+            rows.append(
+                {
+                    "Feld": f,
+                    "Feldwinkel [°]": float(angles[f]) if f < len(angles) else None,
+                    "Wellenlänge": j,
+                    "Bildhöhe [mm]": _finite(stats["image_height"][f, j]),
+                    "Strahlen": int(stats["rays"][f, j]),
+                    "versagt": int(stats["failed"][f, j]),
+                    "RMS-OPD [W]": to_waves("rms_opd", f, j),
+                    "PV-OPD [W]": to_waves("pv_opd", f, j),
+                    "RMS ohne Kippung [W]": to_waves("rms_opd_tilt", f, j),
+                    "RMS ohne Defokus [W]": to_waves("rms_opd_defocus", f, j),
+                    "RMS-Spot [mm]": _finite(stats["rms_spot"][f, j]),
+                    "Schwerpunkt x [mm]": _finite(stats["centroid_x"][f, j]),
+                    "Schwerpunkt y [mm]": _finite(stats["centroid_y"][f, j]),
+                    "Hauptstrahl y [mm]": _finite(stats["chief_y"][f, j]),
+                    "Verzeichnung HS [%]": _finite(stats["distortion_chief"][f, j]),
+                    "Verzeichnung SP [%]": _finite(stats["distortion_centroid"][f, j]),
+                    "z_t [mm]": _finite(stats["focus_tangential"][f, j]),
+                    "z_s [mm]": _finite(stats["focus_sagittal"][f, j]),
+                    "Astigmatismus [mm]": _finite(stats["astigmatism"][f, j]),
+                    "Defokus [mm]": _finite(stats["defocus"][f, j]),
+                }
+            )
+    return rows

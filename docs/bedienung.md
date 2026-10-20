@@ -63,9 +63,22 @@ Rechnet `mikroptim.trace` für das gewählte System, sobald sich Datei oder Eins
 
 Fehler von Mikroptim erscheinen als Meldung, z. B. bei afokalen Systemen ohne `target.focal_length` (`ValueError: Wellenfront: Sollbrennweite ist nicht endlich …`) oder wenn die GPU nicht verfügbar ist (`GpuUnavailableError`).
 
-### OPD-Karten, Spots, PSF, MTF, Strehl, Vergleich (G2-T2 bis G2-T4, geplant)
+Die RMS-Wellenfront steht im Reiter **„Wellenfront (trace)“**.
 
-OPD-Karten, Spotdiagramme, PSF, MTF und Strehl; ein zweites System zum Vergleich.
+### OPD und Spots (G2-T2)
+
+Reiter **„OPD und Spots (eval)“**: rechnet `mikroptim.evaluate` auf dem dichten Pupillenraster (wie `mikroptim eval`); Ergebnisse werden pro Datei, Dateistand und Einstellungen zwischengespeichert.
+
+- **Einstellungen:** Raster N (N × N über das Quadrat der normierten Pupille, Standard 64), „halbe Pupille“ (nur x ≥ 0, Symmetrie x → −x), Referenzsphäre durch die Austrittspupille (Standard) oder durch den Scheitel der letzten Fläche (wie trace), GPU und Gerät nur mit CUDA-Build und Gerät. Ab N = 512 steht die Zahl der Strahlen pro Tupel dabei; große Raster rechnen spürbar länger.
+- **Kopfzeile:** Raster und Punkte in der Pupille, Referenzsphäre mit Lage der Austrittspupille, Backend; ein Hinweis, wenn Strahlen versagen.
+- **Kennzahlentabelle** pro Feld und Wellenlänge, wie `tuples` von `mikroptim eval --json`: Bildhöhe, Strahlen, versagt, RMS- und PV-OPD sowie RMS nach Abzug der Kippung bzw. des Defokus (Wellen bei λ_ref), RMS-Spotradius, Schwerpunkt und Hauptstrahl relativ zum idealen Bildpunkt, Verzeichnung von Hauptstrahl (HS) und Schwerpunkt (SP) in %, Brennlinien z_t und z_s relativ zur Bildebene, Astigmatismus und Defokus-Koeffizient (mm). Nicht endliche Werte (z. B. Verzeichnung auf der Achse) stehen leer. Die Strehl-Zahl nach Maréchal aus der Textausgabe von `mikroptim eval` fehlt hier; die Strehl-Zahl über die FFT kommt mit G2-T3.
+- **OPD-Karte** für das gewählte Feld und die gewählte Wellenlänge, nach Abzug von Kolben, Kolben und Kippung oder Kolben, Kippung und Defokus: in Wellen bei λ_ref über der normierten Pupille (x nach rechts, y nach oben), Farbskala blau–weiß–rot symmetrisch um 0; außerhalb der Pupille und bei versagten Strahlen leer. Bei halber Pupille ist die Karte gespiegelt (wie in Mikroptim).
+- **Spotdiagramm** desselben Tupels: Durchstoßpunkte in der Bildebene relativ zum idealen Bildpunkt in µm, Schwerpunkt als rotes ×, idealer Bildpunkt als Kreuz; versagte Strahlen fehlen. Bei halber Pupille nur die gerechnete Hälfte.
+- **Nachrechnen:** Die letzte Zeile nennt `mikroptim eval … --json` mit denselben Optionen und die Optionen für dieselbe OPD-Karte als CSV (`--map F,L --map-file … --remove …`).
+
+### PSF, MTF, Strehl, Vergleich (G2-T3, G2-T4, geplant)
+
+PSF, MTF und Strehl; ein zweites System zum Vergleich.
 
 ## Optimierung (G3, geplant)
 

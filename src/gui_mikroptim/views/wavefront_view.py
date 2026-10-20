@@ -21,32 +21,40 @@ def _trace(
     return compute.trace_wavefront(system, options)
 
 
-def options_form(status: mko.MikroptimStatus, key: str = "auswertung") -> compute.TraceOptions:
-    """Einstellungen; GPU-Schalter nur mit CUDA-Build und nutzbarem Gerät."""
-    c1, c2, c3, c4 = st.columns([1, 1, 1, 2])
-    rings = c1.number_input("Ringe", 1, 256, 10, key=f"{key}.ringe")
-    spokes = c2.number_input("Speichen", 1, 256, 8, key=f"{key}.speichen")
-    gpu = False
-    device = 0
-    precision = "fp64"
-    if status.has_cuda and status.devices:
-        gpu = c3.toggle("GPU", value=False, key=f"{key}.gpu")
-        if gpu:
-            if len(status.devices) > 1:
-                device = c4.selectbox(
-                    "Gerät",
-                    [int(d.get("index", i)) for i, d in enumerate(status.devices)],
-                    format_func=lambda i: f"{i}: {status.devices[i].get('name', '')}",
-                    key=f"{key}.geraet",
-                )
-            precision = c4.radio(
+def gpu_inputs(
+    status: mko.MikroptimStatus, col_toggle, col_extra, key: str, with_precision: bool
+) -> tuple[bool, int, str]:
+    """GPU-Schalter, Gerät und Genauigkeit – nur mit CUDA-Build und nutzbarem Gerät."""
+    gpu, device, precision = False, 0, "fp64"
+    if not (status.has_cuda and status.devices):
+        return gpu, device, precision
+    gpu = col_toggle.toggle("GPU", value=False, key=f"{key}.gpu")
+    if gpu:
+        if len(status.devices) > 1:
+            device = col_extra.selectbox(
+                "Gerät",
+                [int(d.get("index", i)) for i, d in enumerate(status.devices)],
+                format_func=lambda i: f"{i}: {status.devices[i].get('name', '')}",
+                key=f"{key}.geraet",
+            )
+        if with_precision:
+            precision = col_extra.radio(
                 "Genauigkeit",
                 list(compute.PRECISIONS),
                 horizontal=True,
                 key=f"{key}.genauigkeit",
                 help="df64: doppelte Gleitkommazahl aus zwei FP32-Werten (Mikroptim ADR-0003)",
             )
-    return compute.TraceOptions(int(rings), int(spokes), gpu, int(device), precision)
+    return gpu, int(device), precision
+
+
+def options_form(status: mko.MikroptimStatus, key: str = "auswertung") -> compute.TraceOptions:
+    """Einstellungen; GPU-Schalter nur mit CUDA-Build und nutzbarem Gerät."""
+    c1, c2, c3, c4 = st.columns([1, 1, 1, 2])
+    rings = c1.number_input("Ringe", 1, 256, 10, key=f"{key}.ringe")
+    spokes = c2.number_input("Speichen", 1, 256, 8, key=f"{key}.speichen")
+    gpu, device, precision = gpu_inputs(status, c3, c4, key, with_precision=True)
+    return compute.TraceOptions(int(rings), int(spokes), gpu, device, precision)
 
 
 def render(entry: FileEntry, system: Any, options: compute.TraceOptions) -> None:
