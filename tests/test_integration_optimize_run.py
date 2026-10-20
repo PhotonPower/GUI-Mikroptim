@@ -87,7 +87,7 @@ def test_page_run(app_file, workspace, repo):
     assert metrics["Merit Ende"] == f"{cli['result']['merit']:.6g}"
     assert at.session_state["optimierung.lauf"]["result"].merit == cli["result"]["merit"]
     assert "optimierung.verlauf" in [c.key for c in at.get("plotly_chart")]
-    variables = at.dataframe[-1].value
+    variables = next(d.value for d in at.dataframe if "Variable" in d.value.columns)
     assert list(variables["Variable"]) == ["c[1]", "c[2]", "w"]
 
     # andere Optionen: das alte Ergebnis wird nicht als aktuelles gezeigt
