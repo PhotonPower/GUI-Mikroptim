@@ -26,7 +26,7 @@ LARGE_GRID = 512
 
 
 @st.cache_resource(show_spinner="EVAL wird gerechnet …", max_entries=8)
-def _evaluate(path: str, mtime: float, size: int, options: compute.EvalOptions) -> Any:
+def cached_evaluation(path: str, mtime: float, size: int, options: compute.EvalOptions) -> Any:
     """``Evaluation`` pro Datei, Stand und Optionen (nanobind-Objekt, daher Ressourcen-Cache)."""
     return compute.evaluate(system_view.cached_system(path, mtime, size), options)
 
@@ -49,7 +49,7 @@ def options_form(status: mko.MikroptimStatus) -> compute.EvalOptions:
 
 def render(entry: FileEntry, system: Any, options: compute.EvalOptions) -> None:
     try:
-        ev = _evaluate(str(entry.path), entry.mtime, entry.size, options)
+        ev = cached_evaluation(str(entry.path), entry.mtime, entry.size, options)
     except Exception as exc:  # ValueError, GpuUnavailableError, CudaError
         error = compute.load_error(exc)
         st.error(f"{error.kind}: {error.message}")
