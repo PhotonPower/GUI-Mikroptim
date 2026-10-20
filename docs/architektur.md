@@ -48,6 +48,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/synth_form_view.py` | G4-T3 | Reiter „Neue Synthese“: Startsystem, Formular (`st.form`), Anlegen des Jobs |
 | `views/jobs_view.py` | G4-T1 | Reiter „Jobs“: Liste, Details mit Selbstaktualisierung (`st.fragment(run_every=2 s)`) solange der Job läuft, Abbruch |
 | `views/optimize_view.py` | G3-T1 | Variablen (mit Rückfall auf die Datei), Formular der Optionen mit gesperrten ungültigen Kombinationen, Befehl |
+| `views/optimize_plots.py` | G3-T2 | Merit-Verlauf pro Lauf mit abgelehnten Versuchen (rein) |
 | `views/eval_view.py` | G2-T2 | EVAL-Einstellungen, `Evaluation` im Ressourcen-Cache (nanobind-Objekt, höchstens 8), Kennzahlen, Auswahl Feld/Wellenlänge/Abzug, Karten |
 | `views/system_view.py` | G1-T2 | Laden mit Cache (`st.cache_resource` pro Pfad, Änderungszeit, Größe), Fehleranzeige, Katalogreparatur, Reiter der Seite „System“ |
 
@@ -63,6 +64,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `backend/compare.py` | G2-T4 | Vergleichbarkeit zweier Systeme (Feldwinkel, Wellenlängen, λ_ref), Differenz B − A der RMS-Wellenfront, Zeilen für RMS- und Paraxialvergleich |
 | `backend/synth_job.py` | G4-T3 | Optionen von `mikroptim synth` (`SynthOptions`, Standardwerte wie in Mikroptim, nur Abweichungen in den Befehl), Anlegen des Jobs mit Kopie des Startsystems über `System.save`, Ergebnisdateien |
 | `backend/optimize_options.py` | G3-T1 | Optionen von `mikroptim.optimize` mit Regeln von Mikroptim (Störung/Seed nur mit Multistart, Strafgewicht nur weich, Gerät nur mit GPU), `kwargs()` für Python, `cli_args()` für `mikroptim optimize` |
+| `backend/optimize_run.py` | G3-T2 | Lauf von `mikroptim.optimize` mit Rückruf (Verlauf), Abbruch, Zeitgrenze; fremde Ausnahmen (Unterbrechung durch Streamlit) werden durchgereicht; Optimierung als Job |
 | `backend/jobs.py` | G4-T1 | Jobs anlegen (`submit`), Warteschlange (`start_pending`), Status (`load`, `list_jobs`, `effective_status`), Abbruch (`cancel`), Ablage `gui-mikroptim.job/1`, Prozessprüfung für Linux und Windows |
 | `backend/job_runner.py` | G4-T1 | Wrapper eines Jobs: Befehl starten, Ausgaben umleiten, Abbruch überwachen, Status schreiben, nächste Jobs starten |
 | `backend/compute.py` | G1-T2 | dünne Hüllen um Mikroptim: `load_system`, `details` (Systembeschreibung, Paraxialdaten, Variablen mit Teilfehlern), `load_error` (Ausnahme → Art, Meldung, JSON-Pfad), `repair_catalogs` (über `System.from_json`/`save`); `TraceOptions` und `trace_wavefront` (G2-T1, Ergebnis als picklebare `WavefrontResult` mit NumPy-Arrays); `EvalOptions`, `evaluate` und `mm_to_waves` (G2-T2, Umrechnung genau wie `mikroptim eval`); `PsfOptions`, `VectorOptions`, `scalar_psf`, `vector_psf` (über `run_cli` mit temporären CSV-Dateien) und `window_warning` (Regel von `mikroptim eval`) mit Ergebnis `PsfResult` (G2-T3) |
@@ -88,6 +90,7 @@ Streamlit führt das Seitenskript bei jeder Interaktion neu aus. Daraus folgen f
 - **Auswahl des Nutzers** (gewählte Datei, Feld, Wellenlänge) liegt in `st.session_state` unter Schlüsseln mit Seitenpräfix, z. B. `system.quelle`, `auswertung.feld`. Die gewählte Systemdatei ist seitenübergreifend `aktuell.datei` (`views/current.py`); ein Dateiwähler mit `remember` setzt sie nur, wenn sich *seine* Auswahl ändert, damit mehrere Wähler und Knöpfe wie „Ergebnis übernehmen“ sich nicht gegenseitig überschreiben. Sie ist ein eigener Schlüssel und kein Widget-Zustand, weil Streamlit Widget-Zustände von nicht angezeigten Seiten verwirft.
 - **Seitenleiste:** Die Zeile „Aktuelles System“ wird nach dem Lauf der Seite gefüllt (Platzhalter in `app.py`), damit eine neue Auswahl sofort erscheint.
 - **Tests:** `AppTest.switch_page` führt nur das Seitenskript aus, nicht den Einstieg `app.py`; die Seitenleiste wird deshalb über einen normalen Lauf des Einstiegs getestet.
+- **Lauf in der Seite (Optimierung):** Ein Klick während eines Laufs lässt Streamlit die Seite neu starten und unterbricht den laufenden Skriptdurchlauf beim nächsten Streamlit-Aufruf, also im Rückruf von `mikroptim.optimize`; die Unterbrechung bricht die Optimierung ab. Der Verlauf liegt deshalb laufend in `st.session_state` („optimierung.lauf“), und der neue Durchlauf meldet „abgebrochen“ bzw. „unterbrochen“.
 - Der Streamlit-Prozess wird von allen Browsersitzungen geteilt. GPU-Rechnungen im Prozess sind kurz zu halten; was länger dauert, wird ein Job.
 
 ## Jobs (G4-T1)
