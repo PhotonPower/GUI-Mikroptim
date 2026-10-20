@@ -45,6 +45,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/psf_plots.py` | G2-T3 | PSF (linear/log, Ausschnitt in mm, Achsen in µm) und MTF-Schnitte mit f_c; rein |
 | `views/psf_view.py` | G2-T3 | PSF-Einstellungen, gecachte skalare und vektorielle PSF (`st.cache_data`), Kennzahlen, Hinweise, Figuren |
 | `views/compare_view.py` | G2-T4 | Reiter „Vergleich“: Wahl von B, Kennzahlen, Differenz-Heatmap (`wavefront_plots.rms_difference_heatmap`) oder Heatmaps nebeneinander, Paraxialdaten, Linsenschnitte |
+| `views/jobs_view.py` | G4-T1 | Reiter „Jobs“: Liste, Details mit Selbstaktualisierung (`st.fragment(run_every=2 s)`) solange der Job läuft, Abbruch |
 | `views/eval_view.py` | G2-T2 | EVAL-Einstellungen, `Evaluation` im Ressourcen-Cache (nanobind-Objekt, höchstens 8), Kennzahlen, Auswahl Feld/Wellenlänge/Abzug, Karten |
 | `views/system_view.py` | G1-T2 | Laden mit Cache (`st.cache_resource` pro Pfad, Änderungszeit, Größe), Fehleranzeige, Katalogreparatur, Reiter der Seite „System“ |
 
@@ -58,7 +59,8 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `backend/protocols.py` (Erweiterung) | G4-T2 | Format aus dem Dateianfang (`peek_format`), Dateilisten nach Format (`list_documents`), Kandidaten- und Zieltabellen, Schrittfilter |
 | `backend/uploads.py` | G1-T1 | Upload prüfen (Endung, Größe, UTF-8, Format) und unter `uploads/` ablegen, BOM entfernen |
 | `backend/compare.py` | G2-T4 | Vergleichbarkeit zweier Systeme (Feldwinkel, Wellenlängen, λ_ref), Differenz B − A der RMS-Wellenfront, Zeilen für RMS- und Paraxialvergleich |
-| `backend/jobs.py` | G4-T1 | Jobs als Unterprozesse, Ablage `gui-mikroptim.job/1` |
+| `backend/jobs.py` | G4-T1 | Jobs anlegen (`submit`), Warteschlange (`start_pending`), Status (`load`, `list_jobs`, `effective_status`), Abbruch (`cancel`), Ablage `gui-mikroptim.job/1`, Prozessprüfung für Linux und Windows |
+| `backend/job_runner.py` | G4-T1 | Wrapper eines Jobs: Befehl starten, Ausgaben umleiten, Abbruch überwachen, Status schreiben, nächste Jobs starten |
 | `backend/compute.py` | G1-T2 | dünne Hüllen um Mikroptim: `load_system`, `details` (Systembeschreibung, Paraxialdaten, Variablen mit Teilfehlern), `load_error` (Ausnahme → Art, Meldung, JSON-Pfad), `repair_catalogs` (über `System.from_json`/`save`); `TraceOptions` und `trace_wavefront` (G2-T1, Ergebnis als picklebare `WavefrontResult` mit NumPy-Arrays); `EvalOptions`, `evaluate` und `mm_to_waves` (G2-T2, Umrechnung genau wie `mikroptim eval`); `PsfOptions`, `VectorOptions`, `scalar_psf`, `vector_psf` (über `run_cli` mit temporären CSV-Dateien) und `window_warning` (Regel von `mikroptim eval`) mit Ergebnis `PsfResult` (G2-T3) |
 | `backend/system_tables.py` | G1-T2, G2-T1 | Tabellenzeilen aus `System` und `system_to_dict` (Flächen, Spektrum, Felder, Paraxialdaten, Variablen) aus der Wellenfront (`wavefront_rows`, wie `trace --json`) und aus EVAL (`eval_rows`, wie `tuples` von `eval --json`), Zahlenformat mit ∞/NaN |
 
@@ -70,7 +72,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | System | `pages/system.py` | G1 | Laden und Paraxialdaten (Millisekunden) |
 | Auswertung | `pages/auswertung.py` | G2 | Reiter „Wellenfront“ (`trace`), „OPD und Spots“ (`evaluate`), „PSF und MTF“ (`Evaluation.psf`, vektoriell über die CLI bis Raster 256) und „Vergleich“ (`trace` für zwei Systeme), Millisekunden bis Sekunden je nach Raster |
 | Optimierung | `pages/optimierung.py` | G3 | `optimize` mit Rückruf (Sekunden bis Minuten, mit Abbruch) |
-| Jobs und Synthese | `pages/synthese.py` | G4 | nein: startet Jobs und liest deren Dateien |
+| Jobs und Synthese | `pages/synthese.py` | G4-T1, G4-T2 | nein: liest Protokolle, zeigt und steuert Jobs |
 
 ## Zustand und Cache
 
@@ -84,14 +86,46 @@ Streamlit führt das Seitenskript bei jeder Interaktion neu aus. Daraus folgen f
 - **Tests:** `AppTest.switch_page` führt nur das Seitenskript aus, nicht den Einstieg `app.py`; die Seitenleiste wird deshalb über einen normalen Lauf des Einstiegs getestet.
 - Der Streamlit-Prozess wird von allen Browsersitzungen geteilt. GPU-Rechnungen im Prozess sind kurz zu halten; was länger dauert, wird ein Job.
 
-## Jobs (ab G4-T1)
+## Jobs (G4-T1)
 
-Lange Läufe laufen als eigener Prozess (ADR-0003):
+Lange Läufe laufen als eigene Prozesse (ADR-0003), umgesetzt in `backend/jobs.py` und dem Wrapper `backend/job_runner.py`.
 
-1. Die Seite erzeugt eine Jobbeschreibung (Befehl als Argumentliste, Eingabedateien, Optionen, Seed).
-2. `backend/jobs.py` legt `jobs/<JJJJMMTT-hhmmss>-<kurz>/` an, kopiert die Eingaben dorthin, schreibt `job.json` und startet den Prozess mit Arbeitsverzeichnis im Jobordner. `stdout`/`stderr` gehen nach `ausgabe.txt`/`fehler.txt`.
-3. Der Status ergibt sich aus der Prozess-ID, dem Exit-Code (`exit_code` in `job.json`, geschrieben von einem kleinen Wrapper) und den Dateien. Die GUI kann neu starten, ohne laufende Jobs zu verlieren.
-4. Die Seite liest Ausgaben und Protokolle zyklisch (`st.fragment(run_every=…)`), nicht durch Blockieren.
+```mermaid
+sequenceDiagram
+    participant S as Seite (Streamlit)
+    participant J as backend/jobs.py
+    participant W as Wrapper (job_runner)
+    participant B as Befehl (z. B. mikroptim synth)
+    S->>J: submit(kind, argv, inputs)
+    J->>J: Jobordner, eingabe/ kopieren, job.json (wartend)
+    J->>J: start_pending: Sperre, freie Plätze zählen, .gestartet anlegen
+    J->>W: Popen, eigene Sitzung/Prozessgruppe
+    W->>W: job.json: läuft, pid, started
+    W->>B: Popen im Jobordner, stdout/stderr → ausgabe.txt/fehler.txt
+    loop alle 0,2 s
+        W->>W: .abbrechen vorhanden? → Prozessbaum beenden
+    end
+    W->>W: job.json: fertig/fehler/abgebrochen, exit_code, finished
+    W->>J: start_pending (nächster wartender Job)
+    S->>J: list_jobs / load (Status, Ausgabe), cancel → .abbrechen
+```
+
+**Ablage** pro Job `jobs/<JJJJMMTT-hhmmss>-<art>[-n]/`:
+
+| Datei | geschrieben von | Inhalt |
+|---|---|---|
+| `job.json` | Anlage, danach nur der Wrapper | Beschreibung `gui-mikroptim.job/1` (unten) |
+| `eingabe/` | Anlage | Kopien der Eingaben; Systemdateien über eine Kopierfunktion (z. B. Mikroptim `System.save`), damit Glaskataloge vom Jobordner aus gefunden werden |
+| `ausgabe.txt`, `fehler.txt` | Wrapper | stdout und stderr des Befehls |
+| `.gestartet` | Starter (mit `O_EXCL`) | verhindert doppelten Start; „wartend“ mit dieser Datei wird als „läuft (startet)“ angezeigt |
+| `.abbrechen` | Oberfläche | Abbruchwunsch; der Wrapper beendet den Befehl samt Kindprozessen (POSIX: eigene Prozessgruppe, SIGTERM, nach 5 s SIGKILL; Windows: `taskkill /T /F`) |
+| `.wrapper.txt` | Wrapper | Ausgaben des Wrappers selbst (Fehlersuche) |
+
+Die Sperre `jobs/.sperre` (mit `O_EXCL` angelegt, nach 30 s verwaist) schützt Zählen und Starten, sodass nie mehr als `MKO_GUI_MAX_JOBS` Jobs laufen. Wartende Jobs starten in der Reihenfolge der Anlage (`created_ns`), entweder vom Wrapper eines endenden Jobs (die Warteschlange läuft also ohne offene Oberfläche weiter) oder beim Anzeigen der Jobliste.
+
+**Unabhängig von der Oberfläche:** Der Wrapper läuft in einer eigenen Sitzung (POSIX `start_new_session`) bzw. Prozessgruppe ohne Konsole (Windows `CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS`); ein Neustart von Streamlit oder des systemd-Dienstes (`KillMode=process`) beendet laufende Jobs nicht.
+
+**Status**, wie die Oberfläche ihn zeigt (`jobs.effective_status`): `status` aus `job.json`; „läuft“ mit nicht mehr vorhandenem Wrapper-Prozess wird zu „fehler“ (z. B. nach einem Neustart des Rechners), „wartend“ mit `.gestartet` zu „läuft (startet)“ und nach 60 s ohne Meldung des Wrappers zu „fehler“.
 
 Format `gui-mikroptim.job/1` (`job.json`):
 
@@ -99,15 +133,20 @@ Format `gui-mikroptim.job/1` (`job.json`):
 |---|---|
 | `format` | `"gui-mikroptim.job/1"` |
 | `id` | Name des Jobordners |
-| `kind` | `synth`, `optimize`, `eval`, … |
-| `argv` | vollständige Argumentliste, so wie gestartet (reproduzierbar per Hand) |
-| `inputs` | kopierte Eingabedateien (relativ zum Jobordner) |
-| `mikroptim_version` | Version beim Start |
-| `created`, `started`, `finished` | Zeitpunkte (ISO 8601, UTC) |
-| `pid`, `exit_code` | Prozess-ID, Exit-Code (`null` solange laufend) |
+| `kind` | Art: `synth`, `eval`, `optimize`, …; kleingeschrieben, Teil des Ordnernamens |
+| `argv` | vollständige Argumentliste, wie gestartet (im Jobordner von Hand wiederholbar) |
+| `inputs`, `sources` | kopierte Eingaben (relativ zum Jobordner) und ihre Herkunft |
+| `options` | Optionen und Seed des Laufs, zur Anzeige und Nachvollziehbarkeit |
+| `mikroptim_version` | Version beim Anlegen |
+| `created`, `created_ns`, `started`, `finished` | Zeitpunkte (ISO 8601, UTC; `created_ns` für die Reihenfolge) |
+| `pid` | Prozess-ID des Wrappers |
+| `exit_code` | Exit-Code des Befehls (`null` solange laufend, negativ bei Signal) |
 | `status` | `wartend`, `läuft`, `fertig`, `fehler`, `abgebrochen` |
+| `error` | nur wenn der Befehl nicht starten konnte |
 
-Gleichzeitig laufende Jobs sind auf `MKO_GUI_MAX_JOBS` begrenzt (Standard 1, weil die GPU geteilt wird).
+Umgebung: Jobs erben die Umgebung der GUI, dazu `PYTHONUNBUFFERED=1`, `PYTHONUTF8=1` (Python-Befehle schreiben auch unter Windows UTF-8 in `ausgabe.txt`) und `MKO_GUI_MAX_JOBS`.
+
+Mikroptim-Befehle baut `jobs.mikroptim_argv`: das Programm `mikroptim` (`MKO_GUI_CLI`, fortlaufende Ausgabe) oder `python -m mikroptim`.
 
 ## Fehlerbehandlung
 

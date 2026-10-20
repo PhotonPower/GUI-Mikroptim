@@ -101,7 +101,7 @@ loginctl enable-linger "$USER"      # Dienst läuft auch ohne angemeldete Sitzun
 journalctl --user -u gui-mikroptim -f
 ```
 
-Jobs laufen als Kindprozesse und überleben einen Neustart der GUI nicht zwingend; ab G4 werden sie vom Dienst getrennt gestartet (eigene Prozessgruppe), damit ein Neustart der Oberfläche keinen Synthese-Lauf abbricht.
+Jobs laufen in eigenen Sitzungen bzw. Prozessgruppen (docs/architektur.md, „Jobs“); zusammen mit `KillMode=process` beendet ein Neustart oder Stopp des Dienstes keinen laufenden Synthese-Lauf. Wartende Jobs startet der Wrapper eines endenden Jobs, auch wenn die GUI gerade nicht läuft. Ein Neustart des Rechners bricht laufende Jobs dagegen ab; sie erscheinen danach als „fehler“ mit Hinweis.
 
 ## Sicherheit
 
@@ -118,4 +118,5 @@ Jobs laufen als Kindprozesse und überleben einen Neustart der GUI nicht zwingen
 | Startseite: „ImportError … libcudart“ | CUDA-Wheel ohne Laufzeitbibliotheken; `LD_LIBRARY_PATH` auf `…/cuda-12.x/lib64` setzen (auch in der env-Datei des Dienstes). |
 | „CUDA-Build, aber kein nutzbares Gerät“ | Treiber, `CUDA_VISIBLE_DEVICES`, Karte unter sm_60. `mikroptim --devices` prüfen. |
 | GPU-Speicher knapp | Andere Prozesse (Agenten, Jobs) belegen die Karte; die Startseite zeigt den freien Speicher. |
+| Job bleibt „läuft (startet)“ und wird nach 60 s „fehler“ | Der Wrapper konnte nicht starten; `.wrapper.txt` im Jobordner lesen (meist falsches venv oder fehlendes Paket). |
 | Browser: Verbindung abgelehnt | Tunnel nicht offen oder anderer Port; `ss -ltnp | grep 8501` auf dem Server. |

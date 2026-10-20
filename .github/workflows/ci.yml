@@ -44,7 +44,10 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest
+      - run: python -m pytest --junitxml=pytest.xml
+      - name: Fehlschläge als Annotationen
+        if: failure()
+        run: python tools/junit_annotations.py pytest.xml
 
   integration:
     # Mit Mikroptim: CPU-Wheel aus Mikroptim main bauen (gecacht pro Commit), Integrationstests.
@@ -81,4 +84,7 @@ jobs:
       - name: Integrationstests
         env:
           MKO_GUI_MIKROPTIM_REPO: ${{ github.workspace }}/Mikroptim
-        run: python -m pytest -m integration
+        run: python -m pytest -m integration --junitxml=pytest.xml
+      - name: Fehlschläge als Annotationen
+        if: failure()
+        run: python tools/junit_annotations.py pytest.xml

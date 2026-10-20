@@ -25,3 +25,4 @@ arbeitsbereich/*
 *.swp
 .DS_Store
 Thumbs.db
+pytest.xml

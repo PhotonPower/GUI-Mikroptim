@@ -116,6 +116,14 @@ Zeigt Protokolle von `mikroptim synth … --log datei.json` (Format `mikroptim.s
 
 Die GUI rechnet dabei nichts nach: Alle Werte stehen so im Protokoll. `null` im Protokoll (nicht endliche Zahl) erscheint als Lücke bzw. „–“.
 
-### Reiter „Jobs“ (G4-T1, G4-T3, geplant)
+### Reiter „Jobs“ (G4-T1)
 
-Lange Läufe (Synthese, Multistart, große Auswertungen) als Jobs starten und verfolgen. Jeder Job zeigt den vollständigen Befehl, mit dem er sich auf der Kommandozeile wiederholen lässt.
+Lange Läufe (Synthese, Multistart, große Auswertungen) laufen als Jobs in eigenen Prozessen; sie laufen weiter, wenn der Browser geschlossen oder die GUI neu gestartet wird. Jobs entstehen aus Formularen der GUI (Synthese ab G4-T3).
+
+- **Oben:** laufende Jobs gegen die Höchstzahl (`MKO_GUI_MAX_JOBS`, Standard 1, weil die GPU geteilt wird) und wartende Jobs; „Aktualisieren“ liest alles neu.
+- **Liste:** alle Jobs, neueste zuerst, mit Art, Status (⏳ wartend, ▶️ läuft, ✅ fertig, ❌ fehler, ⏹️ abgebrochen), Anlagezeit, Dauer und Exit-Code. Wartende Jobs starten automatisch in der Reihenfolge der Anlage, sobald ein Platz frei wird.
+- **Details** des gewählten Jobs: Status, Dauer, Exit-Code, Mikroptim-Version, Zeiten und Ordner; der **Befehl** zum Wiederholen von Hand (im Jobordner auszuführen); Eingaben; die letzten 200 Zeilen von Ausgabe und Fehlerausgabe; Optionen. Solange der Job läuft, aktualisiert sich die Ansicht alle 2 Sekunden selbst.
+- **Abbrechen:** beendet den Befehl samt aller Kindprozesse, der Status wird „abgebrochen“; ein wartender Job wird gar nicht erst gestartet.
+- „fehler“ mit dem Hinweis „Wrapper-Prozess nicht mehr vorhanden“ heißt: Der Job lief, als der Rechner neu gestartet oder der Prozess von außen beendet wurde.
+
+Die Dateien eines Jobs liegen unter `jobs/` im Arbeitsbereich (Aufbau: docs/architektur.md, „Jobs“); Synthese-Protokolle aus Jobs erscheinen im Reiter „Protokolle“ unter der Quelle „Arbeitsbereich“.

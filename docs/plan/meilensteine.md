@@ -102,7 +102,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ## G4 – Jobs und Synthese
 
-### G4-T1 – Jobverwaltung
+### G4-T1 – Jobverwaltung ✅
 - **Abhängig von:** G0
 - **Inhalt:** `backend/jobs.py` nach docs/architektur.md, „Jobs“ (Format `gui-mikroptim.job/1`, Jobordner, eigene Prozessgruppe, Exit-Code über Wrapper, Begrenzung `MKO_GUI_MAX_JOBS`, Abbrechen per Signal an die Prozessgruppe); Seite mit Jobliste, Status, Ausgabe (Ende von `ausgabe.txt`, zyklisch über `st.fragment(run_every=…)`), Befehl zum Kopieren.
 - **Abnahme:**
