@@ -4,5 +4,9 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionier
 
 ## [Unreleased]
 
+### Geändert
+- Mindestversion Streamlit 1.51 (Breitenangabe `width="stretch"` bei `st.plotly_chart`, `st.dataframe`, `st.graphviz_chart`; `use_container_width` ist in Streamlit abgekündigt).
+
 ### Hinzugefügt
+- G4-T2: Protokollbrowser für `mikroptim.synth/1` im Reiter „Protokolle“ der Seite „Jobs und Synthese“: Auswahl nach Format aus Arbeitsbereich und Mikroptim-Checkout (`docs/ergebnisse`, `data`; `views/file_picker.py`, `protocols.peek_format`, `protocols.list_documents`), Kopfzeile mit Status, Endpunkt, Elementen und Laufzeit, Verlaufsfigur (Homotopie-Punkt, RMS logarithmisch mit abgelehnten Schritten, Elemente, Einfügungen; `views/synth_plots.py`), filterbare Schritttabelle (Art, Aktion, angenommen, Kandidat), Liste der Einfügungen, Stammbaum und Kandidatentabelle der Strahlsuche (eigene `.dot`-Datei, falls vorhanden), Ziel-Tupel, Optionen und Rohdaten. `best` der Strahlsuche als Zahl oder Objekt. Getestet mit allen 44 Protokollen aus Mikroptim M6-T6.
 - G0: Projektgerüst. Paket `gui_mikroptim` (src-Layout, `pyproject.toml`, Python ≥ 3.10), Startprogramm `gui-mikroptim` (bindet an 127.0.0.1), Konfiguration über Umgebungsvariablen (`gui_mikroptim.config`), sicherer Dateizugriff im Arbeitsbereich (`backend.files`), Erkennen und Lesen der JSON-Formate von Mikroptim (`backend.protocols`, u. a. `mikroptim.synth/1` mit Schritten und Kandidaten-Stammbaum), Statusabfrage von Mikroptim ohne harte Abhängigkeit (`backend.mko`), Streamlit-App mit Navigation, Startseite (Status von Mikroptim, GPUs, Arbeitsbereich) und Platzhalterseiten für G1–G4; Tests (pytest, Streamlit `AppTest`), Integrationstests gegen ein installiertes Mikroptim (Marker `integration`); CI (ruff, pytest auf Linux und Windows, Integration mit dem CPU-Wheel aus Mikroptim `main`); Dokumentation, ADR-0001 bis ADR-0005, Meilensteinplan, Vorlagen für PRs und Issues, systemd-Vorlage.

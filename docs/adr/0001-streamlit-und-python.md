@@ -27,3 +27,7 @@ Mikroptim soll auf dem Rechenserver leichter testbar werden, ohne jeden Lauf üb
 - **Dash/Panel:** mehr Kontrolle über Rückrufe, aber mehr Code für denselben Umfang.
 - **Web-Frontend (React) mit eigenem Backend:** für den Zweck zu aufwendig.
 - **Desktop-GUI (Qt):** braucht X-Weiterleitung oder lokale Installation; der Server hat die GPUs.
+
+## Nachtrag 2026-10-20 (G4-T2)
+
+Mindestversion von Streamlit auf 1.51 angehoben (`pyproject.toml`): Ab dieser Version nehmen `st.plotly_chart`, `st.dataframe` und `st.graphviz_chart` die Breitenangabe `width="stretch"` an; das bisherige `use_container_width` ist abgekündigt. Die Entscheidung selbst bleibt unverändert.
