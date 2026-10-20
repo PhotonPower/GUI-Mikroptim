@@ -42,6 +42,8 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/wavefront_plots.py` | G2-T1 | Heatmap Feld × Wellenlänge (rein) |
 | `views/wavefront_view.py` | G2-T1 | Einstellungen (`gpu_inputs`: GPU nur mit Gerät), gecachte Rechnung (`st.cache_data` pro Pfad, Stand, Optionen), Darstellung |
 | `views/eval_plots.py` | G2-T2 | OPD-Karte (divergierend, symmetrisch um 0, NaN leer) und Spotdiagramm in µm (ab 5000 Punkten WebGL); rein |
+| `views/psf_plots.py` | G2-T3 | PSF (linear/log, Ausschnitt in mm, Achsen in µm) und MTF-Schnitte mit f_c; rein |
+| `views/psf_view.py` | G2-T3 | PSF-Einstellungen, gecachte skalare und vektorielle PSF (`st.cache_data`), Kennzahlen, Hinweise, Figuren |
 | `views/eval_view.py` | G2-T2 | EVAL-Einstellungen, `Evaluation` im Ressourcen-Cache (nanobind-Objekt, höchstens 8), Kennzahlen, Auswahl Feld/Wellenlänge/Abzug, Karten |
 | `views/system_view.py` | G1-T2 | Laden mit Cache (`st.cache_resource` pro Pfad, Änderungszeit, Größe), Fehleranzeige, Katalogreparatur, Reiter der Seite „System“ |
 
@@ -55,7 +57,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `backend/protocols.py` (Erweiterung) | G4-T2 | Format aus dem Dateianfang (`peek_format`), Dateilisten nach Format (`list_documents`), Kandidaten- und Zieltabellen, Schrittfilter |
 | `backend/uploads.py` | G1-T1 | Upload prüfen (Endung, Größe, UTF-8, Format) und unter `uploads/` ablegen, BOM entfernen |
 | `backend/jobs.py` | G4-T1 | Jobs als Unterprozesse, Ablage `gui-mikroptim.job/1` |
-| `backend/compute.py` | G1-T2 | dünne Hüllen um Mikroptim: `load_system`, `details` (Systembeschreibung, Paraxialdaten, Variablen mit Teilfehlern), `load_error` (Ausnahme → Art, Meldung, JSON-Pfad), `repair_catalogs` (über `System.from_json`/`save`); `TraceOptions` und `trace_wavefront` (G2-T1, Ergebnis als picklebare `WavefrontResult` mit NumPy-Arrays); `EvalOptions`, `evaluate` und `mm_to_waves` (G2-T2, Umrechnung genau wie `mikroptim eval`); ab G2-T3 `psf` |
+| `backend/compute.py` | G1-T2 | dünne Hüllen um Mikroptim: `load_system`, `details` (Systembeschreibung, Paraxialdaten, Variablen mit Teilfehlern), `load_error` (Ausnahme → Art, Meldung, JSON-Pfad), `repair_catalogs` (über `System.from_json`/`save`); `TraceOptions` und `trace_wavefront` (G2-T1, Ergebnis als picklebare `WavefrontResult` mit NumPy-Arrays); `EvalOptions`, `evaluate` und `mm_to_waves` (G2-T2, Umrechnung genau wie `mikroptim eval`); `PsfOptions`, `VectorOptions`, `scalar_psf`, `vector_psf` (über `run_cli` mit temporären CSV-Dateien) und `window_warning` (Regel von `mikroptim eval`) mit Ergebnis `PsfResult` (G2-T3) |
 | `backend/system_tables.py` | G1-T2, G2-T1 | Tabellenzeilen aus `System` und `system_to_dict` (Flächen, Spektrum, Felder, Paraxialdaten, Variablen) aus der Wellenfront (`wavefront_rows`, wie `trace --json`) und aus EVAL (`eval_rows`, wie `tuples` von `eval --json`), Zahlenformat mit ∞/NaN |
 
 ## Seiten
@@ -64,7 +66,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 |---|---|---|---|
 | Start | `pages/start.py` | G0 | nein (nur Status) |
 | System | `pages/system.py` | G1 | Laden und Paraxialdaten (Millisekunden) |
-| Auswertung | `pages/auswertung.py` | G2-T1, G2-T2 | Reiter „Wellenfront“ (`trace`) und „OPD und Spots“ (`evaluate`), Millisekunden bis Sekunden je nach Raster; ab G2-T3 PSF |
+| Auswertung | `pages/auswertung.py` | G2-T1 bis G2-T3 | Reiter „Wellenfront“ (`trace`), „OPD und Spots“ (`evaluate`) und „PSF und MTF“ (`Evaluation.psf`, vektoriell über die CLI bis Raster 256), Millisekunden bis Sekunden je nach Raster |
 | Optimierung | `pages/optimierung.py` | G3 | `optimize` mit Rückruf (Sekunden bis Minuten, mit Abbruch) |
 | Jobs und Synthese | `pages/synthese.py` | G4 | nein: startet Jobs und liest deren Dateien |
 

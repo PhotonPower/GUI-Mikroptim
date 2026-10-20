@@ -1,10 +1,17 @@
-"""Seite „Auswertung“: RMS-Wellenfront (G2-T1), EVAL mit OPD-Karten und Spots (G2-T2)."""
+"""Seite „Auswertung“: Wellenfront (G2-T1), OPD und Spots (G2-T2), PSF und MTF (G2-T3)."""
 
 from __future__ import annotations
 
 import streamlit as st
 
-from gui_mikroptim.views import common, eval_view, file_picker, system_view, wavefront_view
+from gui_mikroptim.views import (
+    common,
+    eval_view,
+    file_picker,
+    psf_view,
+    system_view,
+    wavefront_view,
+)
 
 cfg = common.settings_or_stop()
 st.title("Auswertung")
@@ -25,16 +32,22 @@ if entry is not None:
         st.caption("Details und Reparatur auf der Seite „System“.")
     else:
         st.subheader(system.name or entry.path.stem)
-        tab_trace, tab_eval = st.tabs(["Wellenfront (trace)", "OPD und Spots (eval)"])
+        tab_trace, tab_eval, tab_psf = st.tabs(
+            ["Wellenfront (trace)", "OPD und Spots (eval)", "PSF und MTF"]
+        )
         with tab_trace:
             options = wavefront_view.options_form(status)
             wavefront_view.render(entry, system, options)
         with tab_eval:
             eval_options = eval_view.options_form(status)
             eval_view.render(entry, system, eval_options)
+        with tab_psf:
+            st.caption(
+                "Raster, Referenzsphäre und GPU wie im Reiter „OPD und Spots“ "
+                f"(Raster {eval_options.grid})."
+            )
+            psf_options, vector_options = psf_view.options_form(status, eval_options)
+            psf_view.render(entry, system, eval_options, psf_options, vector_options)
 
 st.divider()
-st.caption(
-    "Als Nächstes (docs/plan/meilensteine.md): `G2-T3` PSF, MTF und Strehl, `G2-T4` Vergleich "
-    "zweier Systeme."
-)
+st.caption("Als Nächstes (docs/plan/meilensteine.md): `G2-T4` Vergleich zweier Systeme.")

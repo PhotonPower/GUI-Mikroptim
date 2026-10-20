@@ -76,9 +76,18 @@ Reiter **„OPD und Spots (eval)“**: rechnet `mikroptim.evaluate` auf dem dich
 - **Spotdiagramm** desselben Tupels: Durchstoßpunkte in der Bildebene relativ zum idealen Bildpunkt in µm, Schwerpunkt als rotes ×, idealer Bildpunkt als Kreuz; versagte Strahlen fehlen. Bei halber Pupille nur die gerechnete Hälfte.
 - **Nachrechnen:** Die letzte Zeile nennt `mikroptim eval … --json` mit denselben Optionen und die Optionen für dieselbe OPD-Karte als CSV (`--map F,L --map-file … --remove …`).
 
-### PSF, MTF, Strehl, Vergleich (G2-T3, G2-T4, geplant)
+### PSF und MTF (G2-T3)
 
-PSF, MTF und Strehl; ein zweites System zum Vergleich.
+Reiter **„PSF und MTF“**: Beugungs-PSF eines Feldes und einer Wellenlänge aus der EVAL-Rechnung. Raster, Referenzsphäre und GPU kommen aus dem Reiter „OPD und Spots“; ein größeres Raster dort vergrößert das Bildfenster der PSF.
+
+- **Einstellungen:** Zero-Padding Q (≥ 2, Standard 4), NA vorgeben (0: aus den Feldstrahlen, wie in Mikroptim; nötig z. B. bei afokalen Systemen), Modell skalar oder vektoriell (Richards-Wolf), beim vektoriellen Modell Polarisation (linear x/y, zirkular, unpolarisiert) und Defokus der Auswerteebene. Feld, Wellenlänge, lineare oder logarithmische Darstellung und der Ausschnitt in Airy-Radien (0: ganzes Bildfenster).
+- **Kennzahlen:** Strehl (nach Abzug der Kippung), Strehl im idealen Bildpunkt, Maximum der abgetasteten PSF, Airy-Radius, MTF bei f_c/2 sagittal und tangential; darunter NA, FFT-Größe und Pixel, Lage des Maximums, transmittierter Anteil und Grenzfrequenz f_c. Beim vektoriellen Modell zusätzlich FWHM und die Energieanteile von E_x, E_y, E_z.
+- **Hinweise:** NA über 0,6 beim skalaren Modell (die skalare Näherung ist dann ungenau, vektoriell verwenden). Bildfenster zu klein: Reicht der geometrische Spot (Schwerpunkt ± 3 RMS-Radien) über das halbe Bildfenster, faltet die FFT die PSF zurück – dieselbe Warnung wie `mikroptim eval`; Abhilfe ist ein größeres Raster.
+- **PSF** in Strehl-Einheiten über der Bildebene in µm relativ zum idealen Bildpunkt; **MTF** sagittal und tangential über der Ortsfrequenz in lp/mm mit f_c und f_c/2. Beim vektoriellen Modell aufklappbar die Feldkomponenten |E_x|², |E_y|², |E_z|² (logarithmisch).
+- Die vektorielle PSF rechnet Mikroptim über die Kommandozeile (`mikroptim eval --vector`), solange sie nicht in der Python-API steht; direkt in der Seite nur bis Raster 256, größere Läufe gehören in einen Job (ab G4-T1).
+- **Nachrechnen:** `mikroptim eval … --json --psf …` mit denselben Optionen, PSF und MTF des Tupels als CSV.
+
+### Vergleich zweier Systeme (G2-T4, geplant)
 
 ## Optimierung (G3, geplant)
 

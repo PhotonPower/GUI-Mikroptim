@@ -69,7 +69,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** `mikroptim.evaluate` (Raster, halbe/volle Pupille, Referenz Austrittspupille/Scheitel); Auswahl Feld/Wellenlänge; OPD-Karte mit Abzug (keiner, Kippung, Kippung und Defokus), Spotdiagramm, Kennzahlentabelle aus `stats`.
 - **Abnahme:** Figuren-Funktionen getestet (NaN außerhalb der Pupille bleibt leer, Farbskala symmetrisch); Kennzahlen identisch zu `mikroptim eval --json`.
 
-### G2-T3 – PSF, MTF, Strehl
+### G2-T3 – PSF, MTF, Strehl ✅
 - **Abhängig von:** G2-T2
 - **Inhalt:** `Evaluation.psf` (skalar): PSF linear und logarithmisch, MTF sagittal/tangential mit Beugungsgrenze als Bezug aus den Rückgabewerten, Strehl. Vektorielle PSF über `mikroptim eval --vector --json` (bis Wunsch W3), als kurzer Aufruf oder Job je nach Rasterzahl.
 - **Abnahme:** Strehl und MTF identisch zu `mikroptim eval --psf --json`; Hinweis bei NA > 0,6, dass die skalare Näherung ungenau ist (Mikroptim M8-T2).
