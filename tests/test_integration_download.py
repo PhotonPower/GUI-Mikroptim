@@ -56,4 +56,5 @@ def test_optimization_page_offers_download(app_file, workspace, repo):
     labels = [d.proto.label for d in at.get("download_button")]
     assert "Herunterladen" in labels
     keys = [c.key for c in at.get("plotly_chart")]
-    assert "optimierung.verlauf" in keys and "optimierung.endmerit" in keys  # Multistart: 2 Diagramme
+    # Multistart: Verlauf und Endmerit pro Lauf
+    assert "optimierung.verlauf" in keys and "optimierung.endmerit" in keys
