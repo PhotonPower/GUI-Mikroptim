@@ -33,9 +33,12 @@ def cached_evaluation(path: str, mtime: float, size: int, options: compute.EvalO
 
 def options_form(status: mko.MikroptimStatus) -> compute.EvalOptions:
     c1, c2, c3, c4, c5 = st.columns([1, 1, 2, 1, 2])
-    grid = c1.number_input("Raster N", 8, 2048, 64, step=8, key=f"{KEY}.raster")
-    half = c2.toggle("halbe Pupille", value=False, key=f"{KEY}.halb", help="Symmetrie x → −x")
-    reference = c3.selectbox(
+    grid = common.number(c1, "Raster N", 8, 2048, 64, step=8, key=f"{KEY}.raster")
+    half = common.toggle(
+        c2, "halbe Pupille", value=False, key=f"{KEY}.halb", help="Symmetrie x → −x"
+    )
+    reference = common.select(
+        c3,
         "Referenzsphäre",
         list(compute.REFERENCES),
         format_func=REFERENCE_LABELS.get,
@@ -78,18 +81,23 @@ def render(entry: FileEntry, system: Any, options: compute.EvalOptions) -> None:
 
     fields, wavelengths = ev.stats["rms_opd"].shape
     c1, c2, c3 = st.columns(3)
-    f = c1.selectbox(
+    f = common.select(
+        c1,
         "Feld",
         list(range(fields)),
         format_func=dict(enumerate(field_labels(fields, system.field_angles_deg))).get,
         key=f"{KEY}.feld",
     )
     wl_labels = wavelength_labels(system.wavelengths_nm, system.reference_nm)
-    j = c2.selectbox(
-        "Wellenlänge", list(range(wavelengths)), format_func=wl_labels.__getitem__, key=f"{KEY}.wl"
+    j = common.select(
+        c2,
+        "Wellenlänge",
+        list(range(wavelengths)),
+        format_func=wl_labels.__getitem__,
+        key=f"{KEY}.wl",
     )
-    remove = c3.selectbox(
-        "Abziehen", list(compute.REMOVALS), format_func=REMOVAL_LABELS.get, key=f"{KEY}.abzug"
+    remove = common.select(
+        c3, "Abziehen", list(compute.REMOVALS), format_func=REMOVAL_LABELS.get, key=f"{KEY}.abzug"
     )
 
     left, right = st.columns(2)

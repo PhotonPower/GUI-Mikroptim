@@ -39,33 +39,35 @@ def options_form(status: mko.MikroptimStatus) -> OptimizeOptions:
     """Einstellungen mit den Standardwerten von Mikroptim; ungültige Kombinationen sind gesperrt."""
     d = OptimizeOptions()
     c1, c2, c3, c4 = st.columns(4)
-    max_iterations = c1.number_input(
+    max_iterations = common.number(c1,
         "Zyklen pro Lauf", 0, 100000, d.max_iterations, key=f"{KEY}.zyklen",
         help="0: nur den Startpunkt auswerten",
     )  # fmt: skip
-    rings = c2.number_input("Ringe", 1, 256, d.rings, key=f"{KEY}.ringe")
-    spokes = c3.number_input("Speichen", 1, 256, d.spokes, key=f"{KEY}.speichen")
-    jacobian = c4.radio("Jacobi-Matrix", list(JACOBIANS), horizontal=True, key=f"{KEY}.jacobi")
+    rings = common.number(c2, "Ringe", 1, 256, d.rings, key=f"{KEY}.ringe")
+    spokes = common.number(c3, "Speichen", 1, 256, d.spokes, key=f"{KEY}.speichen")
+    jacobian = common.radio(
+        c4, "Jacobi-Matrix", list(JACOBIANS), horizontal=True, key=f"{KEY}.jacobi"
+    )
 
     c1, c2, c3 = st.columns(3)
-    runs = c1.number_input("Läufe (Multistart)", 1, 1000, d.runs, key=f"{KEY}.laeufe")
+    runs = common.number(c1, "Läufe (Multistart)", 1, 1000, d.runs, key=f"{KEY}.laeufe")
     multistart = runs >= 2
-    perturbation = c2.number_input(
+    perturbation = common.number(c2,
         "relative Störung", 0.0, 10.0, d.perturbation, 0.01, key=f"{KEY}.stoerung",
         disabled=not multistart, help="nur mit mindestens 2 Läufen",
     )  # fmt: skip
-    seed = c3.number_input(
+    seed = common.number(c3,
         "Seed", 0, 2**31 - 1, d.seed, key=f"{KEY}.seed", disabled=not multistart,
         help="nur mit mindestens 2 Läufen; gleicher Seed ergibt dasselbe Ergebnis",
     )  # fmt: skip
 
     c1, c2, c3, c4 = st.columns(4)
-    hard = c1.toggle("hartes Strahlversagen", value=False, key=f"{KEY}.hart")
-    own_weight = c2.toggle(
+    hard = common.toggle(c1, "hartes Strahlversagen", value=False, key=f"{KEY}.hart")
+    own_weight = common.toggle(c2,
         "eigenes Strafgewicht", value=False, key=f"{KEY}.eigenes_gewicht", disabled=hard,
         help="nur beim weichen Strahlversagen",
     )  # fmt: skip
-    weight = c3.number_input(
+    weight = common.number(c3,
         "w_fail [Wellen²]", 1e-9, 1e9, 1.0, format="%.4g", key=f"{KEY}.gewicht",
         disabled=hard or not own_weight,
     )  # fmt: skip
@@ -142,7 +144,7 @@ def run_section(cfg, entry: FileEntry, system: Any, options: OptimizeOptions) ->
     st.session_state.pop(STOP_FLAG, None)
 
     c1, c2 = st.columns([1, 3])
-    limit = c1.number_input(
+    limit = common.number(c1,
         "Zeitgrenze [s]", 1, 86400, 60, key=f"{KEY}.zeitgrenze",
         help="Danach bricht die Seite ab und bietet an, die Optimierung als Job zu rechnen.",
     )  # fmt: skip

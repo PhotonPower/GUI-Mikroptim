@@ -28,17 +28,19 @@ def gpu_inputs(
     gpu, device, precision = False, 0, "fp64"
     if not (status.has_cuda and status.devices):
         return gpu, device, precision
-    gpu = col_toggle.toggle("GPU", value=False, key=f"{key}.gpu")
+    gpu = common.toggle(col_toggle, "GPU", value=False, key=f"{key}.gpu")
     if gpu:
         if len(status.devices) > 1:
-            device = col_extra.selectbox(
+            device = common.select(
+                col_extra,
                 "Gerät",
                 [int(d.get("index", i)) for i, d in enumerate(status.devices)],
                 format_func=lambda i: f"{i}: {status.devices[i].get('name', '')}",
                 key=f"{key}.geraet",
             )
         if with_precision:
-            precision = col_extra.radio(
+            precision = common.radio(
+                col_extra,
                 "Genauigkeit",
                 list(compute.PRECISIONS),
                 horizontal=True,
@@ -51,8 +53,8 @@ def gpu_inputs(
 def options_form(status: mko.MikroptimStatus, key: str = "auswertung") -> compute.TraceOptions:
     """Einstellungen; GPU-Schalter nur mit CUDA-Build und nutzbarem Gerät."""
     c1, c2, c3, c4 = st.columns([1, 1, 1, 2])
-    rings = c1.number_input("Ringe", 1, 256, 10, key=f"{key}.ringe")
-    spokes = c2.number_input("Speichen", 1, 256, 8, key=f"{key}.speichen")
+    rings = common.number(c1, "Ringe", 1, 256, 10, key=f"{key}.ringe")
+    spokes = common.number(c2, "Speichen", 1, 256, 8, key=f"{key}.speichen")
     gpu, device, precision = gpu_inputs(status, c3, c4, key, with_precision=True)
     return compute.TraceOptions(int(rings), int(spokes), gpu, device, precision)
 

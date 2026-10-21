@@ -95,3 +95,56 @@ def download_csv(rows: list[dict], filename: str, key: str, label: str = "CSV") 
         mime="text/csv",
         key=key,
     )
+
+
+# --- Einstellungen über Seitenwechsel behalten (G5-T4) -----------------------------------------
+#
+# Streamlit verwirft die Zustände von Widgets, deren Seite gerade nicht angezeigt wird. Die
+# Hüllen unten merken jeden Wert unter „_behalten.<Schlüssel>“ (wird nie verworfen) und geben ihn
+# beim nächsten Anlegen als Standardwert mit. Der Wert wird nicht in den Widget-Schlüssel
+# geschrieben; so entsteht keine Warnung „default value … set via the Session State API“.
+
+KEEP_PREFIX = "_behalten."
+
+
+def kept(key: str, default):
+    return st.session_state.get(KEEP_PREFIX + key, default)
+
+
+def keep(key: str, value):
+    st.session_state[KEEP_PREFIX + key] = value
+    return value
+
+
+def number(container, label, min_value, max_value, value, *args, key: str, **kwargs):
+    """``number_input`` mit gemerktem Wert (gemerkt nur innerhalb der Grenzen)."""
+    start = kept(key, value)
+    if not (min_value <= start <= max_value):
+        start = value
+    return keep(
+        key, container.number_input(label, min_value, max_value, start, *args, key=key, **kwargs)
+    )
+
+
+def toggle(container, label, value: bool = False, *, key: str, **kwargs) -> bool:
+    return keep(key, container.toggle(label, value=bool(kept(key, value)), key=key, **kwargs))
+
+
+def _index(key: str, options: list, index: int) -> int:
+    remembered = kept(key, None)
+    return options.index(remembered) if remembered in options else index
+
+
+def select(container, label, options, *, key: str, index: int = 0, **kwargs):
+    options = list(options)
+    return keep(
+        key,
+        container.selectbox(label, options, index=_index(key, options, index), key=key, **kwargs),
+    )
+
+
+def radio(container, label, options, *, key: str, index: int = 0, **kwargs):
+    options = list(options)
+    return keep(
+        key, container.radio(label, options, index=_index(key, options, index), key=key, **kwargs)
+    )
