@@ -5,6 +5,8 @@ from __future__ import annotations
 import numpy as np
 import plotly.graph_objects as go
 
+from gui_mikroptim.views.display_limits import reduce_grid
+
 #: kleinster Wert der logarithmischen Darstellung (Strehl-Einheiten)
 LOG_FLOOR = 1e-8
 
@@ -38,6 +40,10 @@ def psf_figure(
     psf = np.asarray(psf, dtype=float)
     x, y = psf_axes(psf.shape[0], dx, dy)
     z, x, y = crop(psf, x, y, half_width_mm)
+    # Maximum je Block: die Spitze der PSF bleibt sichtbar
+    z, x, y, k = reduce_grid(z, x, y, "max")
+    if k > 1:
+        title = f"{title or 'PSF'} (Anzeige: Maximum über {k} × {k} Pixel)"
     if log:
         z = np.log10(np.maximum(z, LOG_FLOOR))
         colorbar = {"title": {"text": "log₁₀"}}

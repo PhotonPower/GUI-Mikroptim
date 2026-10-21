@@ -42,6 +42,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/wavefront_plots.py` | G2-T1 | Heatmap Feld × Wellenlänge (rein) |
 | `views/wavefront_view.py` | G2-T1 | Einstellungen (`gpu_inputs`: GPU nur mit Gerät), gecachte Rechnung (`st.cache_data` pro Pfad, Stand, Optionen), Darstellung |
 | `views/eval_plots.py` | G2-T2 | OPD-Karte (divergierend, symmetrisch um 0, NaN leer) und Spotdiagramm in µm (ab 5000 Punkten WebGL); rein |
+| `views/display_limits.py` | G5-T2 | Begrenzung der Anzeige: Karten blockweise auf höchstens 512 × 512 (Mittel ohne NaN bzw. Maximum), Punkte auf höchstens 50.000; nur Darstellung |
 | `views/psf_plots.py` | G2-T3 | PSF (linear/log, Ausschnitt in mm, Achsen in µm) und MTF-Schnitte mit f_c; rein |
 | `views/psf_view.py` | G2-T3 | PSF-Einstellungen, gecachte skalare und vektorielle PSF (`st.cache_data`), Kennzahlen, Hinweise, Figuren |
 | `views/compare_view.py` | G2-T4 | Reiter „Vergleich“: Wahl von B, Kennzahlen, Differenz-Heatmap (`wavefront_plots.rms_difference_heatmap`) oder Heatmaps nebeneinander, Paraxialdaten, Linsenschnitte |
