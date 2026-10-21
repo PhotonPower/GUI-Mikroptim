@@ -60,4 +60,5 @@ Was die GUI braucht, aber nicht selbst rechnen darf. Jeder Punkt wird bei Bedarf
 | W5 | Abbruch einer laufenden `optimize`-Rechnung | Knopf „Abbrechen“ (G3-T2) | erfüllt: Ausnahme im `callback` bricht ab (M9-T1) |
 | W6 | Linux-Wheels als manylinux bzw. veröffentlichte Wheels | Installation auf dem Server ohne Compiler | offen, nicht dringend |
 | W7 | Warnungen der Auswertung in der Python-API (`Evaluation.warnings` bzw. pro `Psf`), insbesondere „Bildfenster zu klein“ | PSF-Reiter (G2-T3) | offen; bis dahin bildet `compute.window_warning` die Regel von `psf_window_warnings` nach (Integrationstest: gleiche Tupel, gleiche Zahlen wie die CLI) |
+| W9 | Suchpfad für Glaskataloge (z. B. Umgebungsvariable oder Liste von Wurzeln beim Laden) | Kataloge aus dem Checkout und dem Arbeitsbereich ohne Zuordnung durch die GUI (ADR-0006) | offen |
 | W8 | `strehl_marechal` in `Evaluation.stats` wie in `eval --json` | Kennzahlentabelle (G2-T2) | offen; die GUI zeigt den Wert bis dahin nicht |

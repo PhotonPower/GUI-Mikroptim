@@ -73,25 +73,51 @@ def load_or_report(cfg: Settings, entry: FileEntry) -> Any | None:
 
 
 def catalog_help(cfg: Settings, entry: FileEntry) -> None:
-    """Glaskataloge nicht gefunden: mit dem Mikroptim-Checkout als Basis neu speichern."""
-    st.info(
-        "Mikroptim sucht Glaskataloge vom Ordner der Systemdatei aus aufwärts. Dateien im "
-        "Arbeitsbereich finden Kataloge wie `data/glass/basis.json` deshalb nicht."
+    """Glaskataloge nicht gefunden: zuordnen (Mikroptim-Checkout, hochgeladene Kataloge) und
+    über Mikroptim neu speichern (ADR-0006)."""
+    import json
+
+    from gui_mikroptim.backend import catalogs
+
+    try:
+        entries = list(
+            json.loads(entry.path.read_text(encoding="utf-8")).get("glass_catalogs") or []
+        )
+    except (OSError, ValueError):
+        entries = []
+    resolved = catalogs.resolve_entries(
+        entries, entry.path.parent, cfg.mikroptim_repo, cfg.workspace
     )
-    if cfg.mikroptim_repo is None:
-        st.caption("Zum Reparieren MKO_GUI_MIKROPTIM_REPO auf den Mikroptim-Checkout setzen.")
+    st.info(
+        "Mikroptim sucht Glaskataloge vom Ordner der Systemdatei aus aufwärts. Die GUI sucht "
+        "fehlende zusätzlich im Mikroptim-Checkout und unter den hochgeladenen Glaskatalogen."
+    )
+    st.dataframe(
+        [
+            {"Eintrag": r.entry, "gefunden": r.origin, "Datei": str(r.path) if r.path else "–"}
+            for r in resolved
+        ],
+        hide_index=True,
+        width="stretch",
+    )
+    missing = [r.entry for r in resolved if r.path is None]
+    if missing:
+        names = ", ".join(f"`{Path(m).name}`" for m in missing)
+        st.warning(f"Nicht gefunden: {names}. Den Katalog unter „Glaskataloge“ hochladen.")
+        if cfg.mikroptim_repo is None:
+            st.caption("Für Kataloge von Mikroptim (data/glass/…) MKO_GUI_MIKROPTIM_REPO setzen.")
         return
     if st.button(
-        "Mit Glaskatalogen aus dem Mikroptim-Checkout neu speichern",
+        "Glaskataloge zuordnen und neu speichern",
         key="system.kataloge",
         help=(
-            f"Mikroptim lädt die Datei mit Katalogsuche ab {cfg.mikroptim_repo} und speichert "
-            "sie als neue Datei unter uploads/; die Katalogpfade passt Mikroptim selbst an. "
-            "Die Eingabe bleibt unverändert."
+            "Mikroptim lädt die Datei mit den gefundenen Katalogen und speichert sie als neue "
+            "Datei unter uploads/; die Katalogpfade passt Mikroptim selbst an. Die Eingabe "
+            "bleibt unverändert."
         ),
     ):
         try:
-            target = compute.repair_catalogs(entry.path, cfg.mikroptim_repo, cfg.workspace)
+            target = compute.repair_catalogs(entry.path, cfg.workspace, cfg.mikroptim_repo)
         except Exception as exc:
             error = compute.load_error(exc)
             st.error(f"Neu speichern fehlgeschlagen: {error.kind}: {error.message}")

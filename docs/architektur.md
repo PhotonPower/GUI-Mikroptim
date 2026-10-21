@@ -52,6 +52,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/optimize_view.py` | G3-T1 | Variablen (mit Rückfall auf die Datei), Formular der Optionen mit gesperrten ungültigen Kombinationen, Befehl |
 | `views/optimize_plots.py` | G3-T2 | Merit-Verlauf pro Lauf mit abgelehnten Versuchen (rein) |
 | `views/eval_view.py` | G2-T2 | EVAL-Einstellungen, `Evaluation` im Ressourcen-Cache (nanobind-Objekt, höchstens 8), Kennzahlen, Auswahl Feld/Wellenlänge/Abzug, Karten |
+| `views/catalog_view.py` | G1-T4 | Bereich „Glaskataloge“ auf der Seite „System“: Liste, Upload mit Prüfung durch Mikroptim, Löschen |
 | `views/system_view.py` | G1-T2 | Laden mit Cache (`st.cache_resource` pro Pfad, Änderungszeit, Größe), Fehleranzeige, Katalogreparatur, Reiter der Seite „System“ |
 
 ### Backend-Module
@@ -62,6 +63,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `backend/mko.py` | G0 | Status von Mikroptim (Version, CUDA, Geräte), `require()`; einziger `import mikroptim` |
 | `backend/protocols.py` | G0 | JSON-Formate von Mikroptim erkennen, `mikroptim.synth/1` in Tabellenzeilen und Stammbaum (DOT) umordnen |
 | `backend/protocols.py` (Erweiterung) | G4-T2 | Format aus dem Dateianfang (`peek_format`), Dateilisten nach Format (`list_documents`), Kandidaten- und Zieltabellen, Schrittfilter |
+| `backend/catalogs.py` | G1-T4 | Glaskataloge im Arbeitsbereich (`kataloge/`): prüfen, speichern ohne Überschreiben, auflisten, löschen; Zuordnung der Einträge von `glass_catalogs` (ADR-0006) |
 | `backend/uploads.py` | G1-T1 | Upload prüfen (Endung, Größe, UTF-8, Format) und unter `uploads/` ablegen, BOM entfernen |
 | `backend/compare.py` | G2-T4 | Vergleichbarkeit zweier Systeme (Feldwinkel, Wellenlängen, λ_ref), Differenz B − A der RMS-Wellenfront, Zeilen für RMS- und Paraxialvergleich |
 | `backend/synth_job.py` | G4-T3 | Optionen von `mikroptim synth` (`SynthOptions`, Standardwerte wie in Mikroptim, nur Abweichungen in den Befehl), Anlegen des Jobs mit Kopie des Startsystems über `System.save`, Ergebnisdateien |

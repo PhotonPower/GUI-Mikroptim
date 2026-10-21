@@ -6,6 +6,7 @@ die Fehlerbehandlung. Ohne Streamlit; das Zwischenspeichern übernehmen die Seit
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -69,17 +70,30 @@ def details(system: Any) -> SystemDetails:
     return SystemDetails(data, paraxial, paraxial_error, variables, variables_error)
 
 
-def repair_catalogs(path: Path, base_dir: Path, workspace: Path) -> Path:
+def repair_catalogs(path: Path, workspace: Path, repo: Path | None) -> Path:
     """Speichert eine Systemdatei neu, deren Glaskataloge vom eigenen Ort aus nicht zu finden sind.
 
-    Mikroptim lädt den Text mit Katalogsuche ab ``base_dir`` (``System.from_json``) und schreibt
-    ihn mit ``System.save`` nach ``uploads/<name>-kataloge.json``; ``save`` passt die Pfade unter
-    ``glass_catalogs`` an den neuen Ort an. Die Eingabe bleibt unverändert, nichts wird
-    überschrieben.
+    Nicht gefundene Einträge von ``glass_catalogs`` ordnet :func:`catalogs.resolve_entries` dem
+    Mikroptim-Checkout oder den hochgeladenen Katalogen zu (ADR-0006). Mikroptim lädt den Text mit
+    diesen Pfaden (``System.from_json``) und schreibt ihn mit ``System.save`` nach
+    ``uploads/<name>-kataloge.json``; ``save`` macht die Pfade relativ zum neuen Ort. Die Eingabe
+    bleibt unverändert, nichts wird überschrieben.
+
+    Raises:
+        catalogs.CatalogError: wenn ein Katalog nirgends zu finden ist (Meldung nennt ihn).
     """
+    from gui_mikroptim.backend import catalogs
+
     m = mko.require()
     text = path.read_text(encoding="utf-8")
-    system = m.System.from_json(text, str(base_dir))
+    entries = list(json.loads(text).get("glass_catalogs") or [])
+    resolved = catalogs.resolve_entries(entries, path.parent, repo, workspace)
+    missing = [r.entry for r in resolved if r.path is None]
+    if missing:
+        raise catalogs.CatalogError(
+            "nicht gefunden: " + ", ".join(missing) + " – unter „Glaskataloge“ hochladen"
+        )
+    system = m.System.from_json(catalogs.with_absolute_catalogs(text, resolved), str(path.parent))
     directory = files.resolve_inside(workspace, uploads.UPLOAD_SUBDIR)
     directory.mkdir(parents=True, exist_ok=True)
     target = files.unique_path(directory, f"{path.stem}-kataloge.json")
@@ -500,3 +514,30 @@ def vector_psf(
         vector=dict(p.get("vector") or {}),
         components=components,  # type: ignore[arg-type]
     )
+
+
+def validate_catalog_with_mikroptim(path: Path) -> None:
+    """Lässt Mikroptim einen Glaskatalog laden: ein Prüfsystem mit jedem Glas als Medium.
+
+    Raises:
+        Exception von Mikroptim (``FormatError``, ``GlassError``), wenn der Katalog oder ein Glas
+        nicht verwendbar ist.
+    """
+    m = mko.require()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    surfaces = [{"type": "stop", "thickness": 1.0, "material": "AIR", "semi_diameter": 1.0}]
+    for glass in data["glasses"]:
+        surfaces.append(
+            {"type": "plane", "thickness": 1.0, "material": glass["name"], "semi_diameter": 1.0}
+        )
+    surfaces.append({"type": "plane", "thickness": 1.0, "material": "AIR", "semi_diameter": 1.0})
+    probe = {
+        "format": "mikroptim.system/1",
+        "name": "Katalogprüfung",
+        "units": "mm",
+        "glass_catalogs": [str(path.resolve())],
+        "spectrum": {"wavelengths_nm": [546.07], "weights": [1.0], "reference_nm": 546.07},
+        "source": {"type": "collimated", "field_angles_deg": [0.0], "field_weights": [1.0]},
+        "surfaces": surfaces,
+    }
+    m.System.from_json(json.dumps(probe), str(path.parent))

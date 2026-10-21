@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from gui_mikroptim.views import common, file_picker, system_view
+from gui_mikroptim.views import catalog_view, common, file_picker, system_view
 
 cfg = common.settings_or_stop()
 st.title("System")
@@ -21,6 +21,7 @@ entry = file_picker.pick_document(
     allow_upload=True,
     remember=True,
 )
+catalog_view.section(cfg)
 
 if entry is not None:
     status = common.mikroptim_status()

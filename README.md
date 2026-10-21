@@ -11,7 +11,7 @@ Abgeschlossen sind G0 bis G4 des [Meilensteinplans](docs/plan/meilensteine.md):
 | Seite | Inhalt |
 |---|---|
 | Start | Status von Mikroptim und GPUs, Verzeichnisse |
-| System | Dateiauswahl und Upload, aktuelles System, Flächentabelle, Spektrum und Felder, Paraxialdaten, Variablen, Linsenschnitt, Reparatur der Glaskatalog-Pfade hochgeladener Dateien |
+| System | Dateiauswahl und Upload, aktuelles System, Glaskataloge hochladen, Flächentabelle, Spektrum und Felder, Paraxialdaten, Variablen, Linsenschnitt, Reparatur der Glaskatalog-Pfade hochgeladener Dateien |
 | Auswertung | RMS-Wellenfront, OPD-Karten und Spotdiagramme, PSF/MTF/Strehl (skalar und vektoriell), Vergleich zweier Systeme |
 | Optimierung | Variablen und Optionen, Lauf mit Live-Verlauf, Abbruch und Zeitgrenze, Vorher/Nachher, Speichern des Ergebnisses |
 | Jobs und Synthese | Protokollbrowser für `mikroptim.synth/1`, Jobverwaltung für lange Läufe, Synthese als Job, Ergebnisordner von Läufen (z. B. M6-T6) |
