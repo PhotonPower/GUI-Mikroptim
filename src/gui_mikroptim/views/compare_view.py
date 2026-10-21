@@ -10,7 +10,7 @@ import streamlit as st
 from gui_mikroptim.backend import compare, compute, mko
 from gui_mikroptim.backend.files import FileEntry
 from gui_mikroptim.config import Settings
-from gui_mikroptim.views import file_picker, lens_plot, system_view
+from gui_mikroptim.views import common, file_picker, lens_plot, system_view
 from gui_mikroptim.views.wavefront_plots import (
     field_labels,
     rms_difference_heatmap,
@@ -97,16 +97,14 @@ def render(
         labels_f = field_labels(diff.shape[0], system_a.field_angles_deg)
         labels_w = wavelength_labels(system_a.wavelengths_nm, system_a.reference_nm)
         st.markdown("**RMS-Wellenfront B − A** (rot: B schlechter, blau: B besser)")
-        st.plotly_chart(
-            rms_difference_heatmap(diff, labels_f, labels_w), width="stretch", key=f"{KEY}.delta"
-        )
+        common.chart(rms_difference_heatmap(diff, labels_f, labels_w), key=f"{KEY}.delta")
         with st.expander("Tabelle", expanded=False):
-            st.dataframe(
-                compare.rms_compare_rows(
-                    result_a, result_b, system_a.field_angles_deg, system_a.wavelengths_nm
-                ),
-                hide_index=True,
-                width="stretch",
+            rows = compare.rms_compare_rows(
+                result_a, result_b, system_a.field_angles_deg, system_a.wavelengths_nm
+            )
+            st.dataframe(rows, hide_index=True, width="stretch")
+            common.download_csv(
+                rows, f"vergleich_{entry_a.path.stem}_{entry_b.path.stem}", f"{KEY}.csv"
             )
     else:
         st.warning(
@@ -116,14 +114,10 @@ def render(
         left, right = st.columns(2)
         with left:
             st.markdown("**A**")
-            st.plotly_chart(
-                rms_heatmap(result_a, system_a.field_angles_deg), width="stretch", key=f"{KEY}.a"
-            )
+            common.chart(rms_heatmap(result_a, system_a.field_angles_deg), key=f"{KEY}.a")
         with right:
             st.markdown("**B**")
-            st.plotly_chart(
-                rms_heatmap(result_b, system_b.field_angles_deg), width="stretch", key=f"{KEY}.b"
-            )
+            common.chart(rms_heatmap(result_b, system_b.field_angles_deg), key=f"{KEY}.b")
 
     st.markdown("**Paraxialdaten**")
     st.dataframe(
@@ -139,10 +133,9 @@ def render(
         for col, name, sys_ in ((left, "A", system_a), (right, "B", system_b)):
             with col:
                 geometry = lens_plot.outline(mko.require().system_to_dict(sys_))
-                st.plotly_chart(
+                common.chart(
                     lens_plot.lens_figure(
                         geometry, name, full_image_space=not lens_plot.image_space_is_long(geometry)
                     ),
-                    width="stretch",
                     key=f"{KEY}.schnitt.{name}",
                 )

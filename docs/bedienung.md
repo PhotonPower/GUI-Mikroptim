@@ -2,6 +2,14 @@
 
 Die GUI hat eine Navigation am linken Rand. In der Seitenleiste stehen die Versionen von Mikroptim und der GUI und ob GPUs verfügbar sind.
 
+## Exporte (G5-T3)
+
+Alles wird im Browser heruntergeladen; die GUI schreibt dafür nichts in den Arbeitsbereich.
+
+- **Diagramme:** Die Kamera-Schaltfläche oben rechts in jedem Diagramm speichert es als **SVG** (verlustfrei, für Berichte und Präsentationen) mit einem sprechenden Dateinamen, z. B. `auswertung_eval_opd.svg`.
+- **Tabellen:** Knöpfe „CSV“ unter den wichtigsten Tabellen (Flächen, Paraxialdaten, Wellenfront, EVAL-Kennzahlen, Vergleich, Synthese-Schritte, Optimierungsverlauf). Zahlen stehen in voller Genauigkeit (wie in den JSON-Dateien von Mikroptim), Komma als Trenner, Punkt als Dezimalzeichen, UTF-8. Jede Tabelle lässt sich außerdem über ihr eigenes Menü (oben rechts beim Überfahren) herunterladen.
+- **Systembericht:** „Bericht (Markdown)“ auf der Seite „System“ – Flächen, Spektrum, Felder, Paraxialdaten, Variablen und die RMS-Wellenfront (10 × 8, CPU) als Markdown-Datei mit Tabellen.
+
 ## Start (G0)
 
 Zeigt, ob Mikroptim geladen werden kann (Version, CPU- oder CUDA-Build, GPUs mit freiem Speicher), und die Verzeichnisse: Arbeitsbereich, Mikroptim-Checkout, Beispielsysteme, CLI für Jobs. Fehlt Mikroptim, steht hier die Fehlermeldung des Imports und der Befehl zum Installieren. „Neu prüfen“ fragt Mikroptim und die GPUs erneut ab, z. B. nach einer Installation oder wenn ein anderer Prozess GPU-Speicher freigegeben hat.

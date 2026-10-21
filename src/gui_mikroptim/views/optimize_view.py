@@ -9,6 +9,7 @@ import streamlit as st
 from gui_mikroptim.backend import compute, mko, system_tables
 from gui_mikroptim.backend.files import FileEntry
 from gui_mikroptim.backend.optimize_options import JACOBIANS, OptimizeOptions
+from gui_mikroptim.views import common
 from gui_mikroptim.views.wavefront_view import gpu_inputs
 
 KEY = "optimierung"
@@ -119,9 +120,7 @@ def _show_progress(placeholders, history) -> None:
         c2.metric("Zyklus", last["Zyklus"])
         c3.metric("Merit", f"{last['merit']:.6g}" if last["merit"] is not None else "–")
         c4.metric("beste Merit", f"{best:.6g}" if best is not None else "–")
-    chart.plotly_chart(
-        merit_history_figure(history), width="stretch", key=f"{KEY}.live.{len(history)}"
-    )
+    common.chart(merit_history_figure(history), key=f"{KEY}.live.{len(history)}", container=chart)
 
 
 def run_section(cfg, entry: FileEntry, system: Any, options: OptimizeOptions) -> None:
@@ -249,7 +248,8 @@ def _show_outcome(cfg, entry, options, state, merit_history_figure) -> None:
     elif status == "fehler":
         st.error(state.get("note") or "Fehler")
     if history:
-        st.plotly_chart(merit_history_figure(history), width="stretch", key=f"{KEY}.verlauf")
+        common.download_csv(history, f"{entry.path.stem}_verlauf", f"{KEY}.csv.verlauf")
+        common.chart(merit_history_figure(history), key=f"{KEY}.verlauf")
 
 
 # --- Ergebnis: Vorher/Nachher und Speichern (G3-T3) --------------------------------------------
@@ -288,13 +288,12 @@ def _before_after(entry: FileEntry, options: OptimizeOptions, result: Any) -> No
         delta_color="inverse",
     )
     diff = compare.rms_difference(before, after)
-    st.plotly_chart(
+    common.chart(
         rms_difference_heatmap(
             diff,
             field_labels(diff.shape[0], before_system.field_angles_deg),
             wavelength_labels(before_system.wavelengths_nm, before_system.reference_nm),
         ),
-        width="stretch",
         key=f"{KEY}.vorher_nachher",
     )
     with st.expander("Tabelle vorher/nachher"):

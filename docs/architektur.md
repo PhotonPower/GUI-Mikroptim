@@ -33,7 +33,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 
 | Modul | Stand | Inhalt |
 |---|---|---|
-| `views/common.py` | G0 | Einstellungen, Mikroptim-Status, Seitenleiste, Platzhalter |
+| `views/common.py` | G0, G5-T3 | Einstellungen, Mikroptim-Status, Seitenleiste, Platzhalter; `chart` (alle Plotly-Diagramme mit Bildexport) und `download_csv` |
 | `views/file_picker.py` | G4-T2, G1-T1 | Quelle und Datei nach Format wählen, Upload, Vorauswahl der aktuellen Datei |
 | `views/current.py` | G1-T1 | aktuelles System in `st.session_state["aktuell.datei"]` (absoluter Pfad, geprüft gegen die erlaubten Wurzeln) |
 | `views/synth_plots.py` | G4-T2 | Verlaufsfigur eines Synthese-Protokolls (rein, ohne Streamlit) |
@@ -67,6 +67,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `backend/optimize_options.py` | G3-T1 | Optionen von `mikroptim.optimize` mit Regeln von Mikroptim (Störung/Seed nur mit Multistart, Strafgewicht nur weich, Gerät nur mit GPU), `kwargs()` für Python, `cli_args()` für `mikroptim optimize` |
 | `backend/optimize_run.py` | G3-T2, G3-T3 | Lauf von `mikroptim.optimize` mit Rückruf (Verlauf), Abbruch, Zeitgrenze; fremde Ausnahmen (Unterbrechung durch Streamlit) werden durchgereicht; Optimierung als Job; `save_result` (neue Datei unter `ergebnisse/` über `System.save`, nie überschreibend) |
 | `backend/result_folder.py` | G4-T4 | Ergebnisordner: Dateien nach Mikroptim-Format und Stufenkürzel gliedern, Bericht finden, Kennzahlen von Systemen, Protokollen und Auswertungen aus den Dateien |
+| `backend/export.py` | G5-T3 | CSV (volle Genauigkeit, wieder einlesbar), Markdown-Tabellen und Systembericht, Bildoptionen für Plotly (SVG, Dateiname) |
 | `backend/jobs.py` | G4-T1 | Jobs anlegen (`submit`), Warteschlange (`start_pending`), Status (`load`, `list_jobs`, `effective_status`), Abbruch (`cancel`), Ablage `gui-mikroptim.job/1`, Prozessprüfung für Linux und Windows |
 | `backend/job_runner.py` | G4-T1 | Wrapper eines Jobs: Befehl starten, Ausgaben umleiten, Abbruch überwachen, Status schreiben, nächste Jobs starten |
 | `backend/compute.py` | G1-T2 | dünne Hüllen um Mikroptim: `load_system`, `details` (Systembeschreibung, Paraxialdaten, Variablen mit Teilfehlern), `load_error` (Ausnahme → Art, Meldung, JSON-Pfad), `repair_catalogs` (über `System.from_json`/`save`); `TraceOptions` und `trace_wavefront` (G2-T1, Ergebnis als picklebare `WavefrontResult` mit NumPy-Arrays); `EvalOptions`, `evaluate` und `mm_to_waves` (G2-T2, Umrechnung genau wie `mikroptim eval`); `PsfOptions`, `VectorOptions`, `scalar_psf`, `vector_psf` (über `run_cli` mit temporären CSV-Dateien) und `window_warning` (Regel von `mikroptim eval`) mit Ergebnis `PsfResult` (G2-T3) |

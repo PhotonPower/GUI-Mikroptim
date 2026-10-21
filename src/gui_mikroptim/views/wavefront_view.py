@@ -8,7 +8,7 @@ import streamlit as st
 
 from gui_mikroptim.backend import compute, mko, system_tables
 from gui_mikroptim.backend.files import FileEntry
-from gui_mikroptim.views import system_view
+from gui_mikroptim.views import common, system_view
 from gui_mikroptim.views.wavefront_plots import rms_heatmap
 
 
@@ -87,15 +87,11 @@ def render(entry: FileEntry, system: Any, options: compute.TraceOptions) -> None
             "(Fehlschnitt, Totalreflexion oder Blende); betroffene Zellen sind mit ⚠ markiert."
         )
 
-    st.plotly_chart(
-        rms_heatmap(result, system.field_angles_deg), width="stretch", key="auswertung.rms"
-    )
+    common.chart(rms_heatmap(result, system.field_angles_deg), key="auswertung.rms")
     with st.expander("Tabelle", expanded=False):
-        st.dataframe(
-            system_tables.wavefront_rows(result, system.field_angles_deg),
-            hide_index=True,
-            width="stretch",
-        )
+        rows = system_tables.wavefront_rows(result, system.field_angles_deg)
+        st.dataframe(rows, hide_index=True, width="stretch")
+        common.download_csv(rows, f"{entry.path.stem}_wellenfront", "auswertung.csv.rms")
     st.caption(
         "Nachrechnen: `mikroptim trace "
         + entry.path.name

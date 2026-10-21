@@ -9,7 +9,7 @@ import streamlit as st
 
 from gui_mikroptim.backend import compute, mko, system_tables
 from gui_mikroptim.backend.files import FileEntry
-from gui_mikroptim.views import system_view
+from gui_mikroptim.views import common, system_view
 from gui_mikroptim.views.eval_plots import opd_figure, spot_figure
 from gui_mikroptim.views.wavefront_plots import field_labels, wavelength_labels
 from gui_mikroptim.views.wavefront_view import gpu_inputs
@@ -70,6 +70,7 @@ def render(entry: FileEntry, system: Any, options: compute.EvalOptions) -> None:
 
     rows = system_tables.eval_rows(ev.stats, ref_nm, system.field_angles_deg)
     st.dataframe(rows, hide_index=True, width="stretch")
+    common.download_csv(rows, f"{entry.path.stem}_eval", f"{KEY}.csv")
     st.caption(
         "HS: Hauptstrahl, SP: Schwerpunkt; Schwerpunkt und Brennlinien z_t, z_s relativ zum "
         "idealen Bildpunkt bzw. zur Bildebene. Strehl folgt mit G2-T3 (FFT)."
@@ -94,19 +95,15 @@ def render(entry: FileEntry, system: Any, options: compute.EvalOptions) -> None:
     left, right = st.columns(2)
     with left:
         opd_waves = compute.mm_to_waves(ev.opd_map(int(f), int(j), remove), ref_nm)
-        st.plotly_chart(
-            opd_figure(opd_waves, f"OPD nach Abzug: {REMOVAL_LABELS[remove]}"),
-            width="stretch",
-            key=f"{KEY}.opd",
+        common.chart(
+            opd_figure(opd_waves, f"OPD nach Abzug: {REMOVAL_LABELS[remove]}"), key=f"{KEY}.opd"
         )
     with right:
         spots = ev.spots(int(f), int(j))
         stats = ev.stats
         centroid = (float(stats["centroid_x"][f, j]), float(stats["centroid_y"][f, j]))
-        st.plotly_chart(
-            spot_figure(spots["x"], spots["y"], centroid, "Spotdiagramm"),
-            width="stretch",
-            key=f"{KEY}.spots",
+        common.chart(
+            spot_figure(spots["x"], spots["y"], centroid, "Spotdiagramm"), key=f"{KEY}.spots"
         )
         valid = int(np.isfinite(np.asarray(spots["x"], dtype=float)).sum())
         note = " Nur die gerechnete Hälfte x ≥ 0." if ev.half_pupil else ""

@@ -11,7 +11,7 @@ import streamlit as st
 from gui_mikroptim.backend import compute, protocols, system_tables
 from gui_mikroptim.backend.files import FileEntry
 from gui_mikroptim.config import Settings
-from gui_mikroptim.views import file_picker, lens_plot
+from gui_mikroptim.views import common, file_picker, lens_plot
 
 PICKER_KEY = "system"
 
@@ -120,9 +120,7 @@ def lens_section(data: dict[str, Any], key: str = "system.schnitt") -> None:
         help="Aus: z-Achse endet kurz hinter der letzten Fläche, die Lage der Bildebene steht "
         "am rechten Rand.",
     )
-    st.plotly_chart(
-        lens_plot.lens_figure(geometry, full_image_space=full), width="stretch", key=key
-    )
+    common.chart(lens_plot.lens_figure(geometry, full_image_space=full), key=key)
     for note in geometry.notes:
         st.info(note)
     caption = (
@@ -136,6 +134,38 @@ def lens_section(data: dict[str, Any], key: str = "system.schnitt") -> None:
             "nicht sichtbar)."
         )
     st.caption(caption)
+
+
+def _stem(system: Any) -> str:
+    return Path(str(system.file)).stem if getattr(system, "file", "") else "system"
+
+
+def report_button(system: Any, info: compute.SystemDetails) -> None:
+    """Systembericht als Markdown (Tabellen, Paraxialdaten, Variablen, RMS-Wellenfront)."""
+    from gui_mikroptim.backend import export, mko
+
+    try:
+        wavefront = compute.trace_wavefront(system, compute.TraceOptions())
+    except Exception:  # z. B. afokal: Bericht ohne Wellenfront
+        wavefront = None
+    text = export.system_report(
+        system,
+        info.data,
+        info.paraxial,
+        info.variables or None,
+        wavefront,
+        Path(str(system.file)).name if system.file else None,
+        mko.status().version,
+    )
+    st.download_button(
+        "Bericht (Markdown)",
+        text.encode("utf-8"),
+        file_name=f"{export.safe_stem(_stem(system))}_bericht.md",
+        mime="text/markdown",
+        key="system.bericht",
+        help="Flächen, Spektrum, Felder, Paraxialdaten, Variablen und RMS-Wellenfront "
+        "(10 × 8, CPU) als Markdown",
+    )
 
 
 def _table(rows: list[dict[str, Any]], empty: str) -> None:
@@ -164,6 +194,7 @@ def details(system: Any) -> None:
     c3.metric("Wellenlängen", len(system.wavelengths_nm))
     c4.metric("Felder", len(system.field_angles_deg))
     c5.metric("Brennweite f [mm]", focal_text)
+    report_button(system, info)
     st.caption(
         f"{system.file} · λ_ref {system_tables.fmt_number(system.reference_nm)} nm · "
         f"Quelle {system.source_type} · Kataloge: "
@@ -185,7 +216,9 @@ def details(system: Any) -> None:
     with tabs[0]:
         lens_section(data)
     with tabs[1]:
-        _table(system_tables.surface_rows(system, data), "Keine Flächen.")
+        surfaces = system_tables.surface_rows(system, data)
+        _table(surfaces, "Keine Flächen.")
+        common.download_csv(surfaces, f"{_stem(system)}_flaechen", "system.csv.flaechen")
         st.caption(
             "Material und Brechzahlen gelten für das Medium nach der Fläche; Radius nur zur "
             "Anzeige (1/Krümmung)."
@@ -206,7 +239,9 @@ def details(system: Any) -> None:
                 f"Bei λ_ref = {system_tables.fmt_number(system.reference_nm)} nm, berechnet von "
                 "mikroptim.paraxial (wie Feld `paraxial` von `mikroptim trace --json`)."
             )
-            _table(system_tables.paraxial_rows(info.paraxial), "Keine Paraxialdaten.")
+            paraxial_rows = system_tables.paraxial_rows(info.paraxial)
+            _table(paraxial_rows, "Keine Paraxialdaten.")
+            common.download_csv(paraxial_rows, f"{_stem(system)}_paraxial", "system.csv.paraxial")
             with st.expander("Paraxialdaten als JSON"):
                 st.json(info.paraxial)
     with tabs[4]:
