@@ -48,10 +48,20 @@ def options_form(status: mko.MikroptimStatus) -> OptimizeOptions:
     """Einstellungen mit den Standardwerten von Mikroptim; ungültige Kombinationen sind gesperrt."""
     d = OptimizeOptions()
     c1, c2, c3, c4 = st.columns(4)
-    max_iterations = common.number(c1,
-        "Zyklen pro Lauf", 0, 100000, d.max_iterations, key=f"{KEY}.zyklen",
-        help="0: nur den Startpunkt auswerten",
-    )  # fmt: skip
+    max_iterations = common.number(
+        c1,
+        "Zyklen pro Runde",
+        0,
+        100000,
+        d.max_iterations,
+        key=f"{KEY}.zyklen",
+        help=(
+            "LM-Zyklen je Strafrunde (mikroptim optimize --max-iterations). Versagen am Ende "
+            "einer Runde Strahlen, startet Mikroptim den Lauf mit zehnfachem Strafgewicht neu, "
+            "bis keiner mehr versagt (höchstens bis 10¹⁴); ein Lauf kann so ein Vielfaches "
+            "dieser Zyklen haben. 0: nur den Startpunkt auswerten."
+        ),
+    )
     rings = common.number(c2, "Ringe", 1, 256, d.rings, key=f"{KEY}.ringe")
     spokes = common.number(c3, "Speichen", 1, 256, d.spokes, key=f"{KEY}.speichen")
     jacobian = common.radio(
@@ -266,16 +276,51 @@ def _show_outcome(cfg, entry, options, state, merit_history_figure) -> None:
         st.error(state.get("note") or "Fehler")
     if history:
         common.download_csv(history, f"{entry.path.stem}_verlauf", f"{KEY}.csv.verlauf")
-        from gui_mikroptim.views.optimize_plots import run_summary_figure, runs_of
+        from gui_mikroptim.views.optimize_plots import (
+            ends_with_failed_rays,
+            restart_indices,
+            run_summary_figure,
+            runs_of,
+        )
 
-        if len(runs_of(history)) >= 2:
+        best = getattr(result, "best_run", None) if result is not None else None
+        runs_info = list(getattr(result, "runs", None) or []) if result is not None else None
+        by_run = runs_of(history)
+        if len(by_run) >= 2:
             left, right = st.columns([3, 2])
             with left:
-                common.chart(merit_history_figure(history), key=f"{KEY}.verlauf")
+                common.chart(
+                    merit_history_figure(history, best, runs_info, options.max_iterations),
+                    key=f"{KEY}.verlauf",
+                )
             with right:
-                common.chart(run_summary_figure(history), key=f"{KEY}.endmerit")
+                common.chart(run_summary_figure(history, best, runs_info), key=f"{KEY}.endmerit")
         else:
-            common.chart(merit_history_figure(history), key=f"{KEY}.verlauf")
+            common.chart(
+                merit_history_figure(history, best, runs_info, options.max_iterations),
+                key=f"{KEY}.verlauf",
+            )
+        rounds = {int(r["run"]): r.get("penalty_rounds") or 1 for r in runs_info or []}
+        restarted = sum(
+            1
+            for run, rows in by_run.items()
+            if rounds.get(run, 1) > 1 or restart_indices(rows, options.max_iterations)
+        )
+        failed_end = sum(1 for rows in by_run.values() if ends_with_failed_rays(rows))
+        if restarted:
+            text = (
+                f"{restarted} von {len(by_run)} Läufen mit Neustarts (▲): Am Ende einer Runde "
+                "versagten Strahlen, Mikroptim hat mit zehnfachem Strafgewicht weitergerechnet. "
+                "Die Merit springt dabei durch das höhere Gewicht, nicht weil das System "
+                "schlechter wird; „Zyklen pro Runde“ gilt je Runde."
+            )
+            if failed_end:
+                text += (
+                    f" {failed_end} Läufe enden trotzdem mit versagten Strahlen (gestrichelt, "
+                    "hohle Punkte): keine gültige Lösung, ihre Merit ist überwiegend Strafe. "
+                    "Viele solche Läufe: kleinere relative Störung wählen."
+                )
+            st.caption(text)
 
 
 # --- Ergebnis: Vorher/Nachher und Speichern (G3-T3) --------------------------------------------
