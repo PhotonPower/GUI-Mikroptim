@@ -174,7 +174,8 @@ def resolve_entries(
     """Ordnet jeden Eintrag von ``glass_catalogs`` einer Datei zu.
 
     Reihenfolge: wie Mikroptim vom Ordner der Systemdatei aufwärts, dann im Mikroptim-Checkout
-    (``<repo>/<eintrag>``), dann unter den hochgeladenen Katalogen nach Dateiname.
+    (``<repo>/<eintrag>``), dann unter den hochgeladenen Katalogen nach Dateiname, zuletzt in
+    ``<repo>/data/glass/`` nach Dateiname.
     """
     uploaded = catalog_dir(workspace)
     result = []
@@ -192,6 +193,13 @@ def resolve_entries(
         candidate = uploaded / rel.name
         if candidate.is_file():
             result.append(Resolution(entry, candidate.resolve(), "Arbeitsbereich"))
+            continue
+        # zuletzt Mikroptims Katalogordner nach Dateiname (z. B. ../../Mikroptim/…/basis.json
+        # aus einer heruntergeladenen oder umgezogenen Datei)
+        if repo is not None and (repo / "data" / "glass" / rel.name).is_file():
+            result.append(
+                Resolution(entry, (repo / "data" / "glass" / rel.name).resolve(), "Mikroptim")
+            )
             continue
         result.append(Resolution(entry, None, "fehlt"))
     return result

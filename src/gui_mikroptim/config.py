@@ -6,6 +6,7 @@ Einstellung erhalten und die Startseite meldet es; nur der Arbeitsbereich wird b
 
 from __future__ import annotations
 
+import dataclasses
 import os
 import shutil
 from collections.abc import Mapping
@@ -16,9 +17,11 @@ ENV_WORKSPACE = "MKO_GUI_WORKSPACE"
 ENV_MIKROPTIM_REPO = "MKO_GUI_MIKROPTIM_REPO"
 ENV_CLI = "MKO_GUI_CLI"
 ENV_MAX_JOBS = "MKO_GUI_MAX_JOBS"
+ENV_SESSIONS = "MKO_GUI_SESSIONS"
+ENV_SESSION_DAYS = "MKO_GUI_SESSION_DAYS"
 
 #: Unterverzeichnisse des Arbeitsbereichs (arbeitsbereich/README.md)
-WORKSPACE_SUBDIRS = ("uploads", "ergebnisse", "jobs")
+WORKSPACE_SUBDIRS = ("uploads", "ergebnisse", "jobs", "kataloge")
 
 _DEFAULT_WORKSPACE = Path(__file__).resolve().parents[2] / "arbeitsbereich"
 
@@ -36,13 +39,23 @@ class Settings:
         mikroptim_repo: Checkout von Mikroptim (Beispielsysteme unter ``data/systems``,
             Glaskataloge) oder ``None``.
         cli: Programm ``mikroptim`` für Jobs, oder ``None`` (dann ``python -m mikroptim``).
-        max_jobs: höchstens gleichzeitig laufende Jobs (ab G4).
+        max_jobs: höchstens gleichzeitig laufende Jobs (ab G4), über alle Sitzungen.
+        sessions_root: Wurzel der Sitzungsordner (``MKO_GUI_SESSIONS``) oder ``None``; dann
+            ist ``workspace`` der Arbeitsbereich jeder Sitzung, sonst ein gemeinsamer.
+        session_days: Sitzungsordner ohne Zugriff und ohne laufenden Job werden nach so vielen
+            Tagen gelöscht.
     """
 
     workspace: Path
     mikroptim_repo: Path | None
     cli: Path | None
     max_jobs: int
+    sessions_root: Path | None = None
+    session_days: float = 14.0
+
+    def for_session(self, workspace: Path) -> Settings:
+        """Dieselben Einstellungen mit dem Sitzungsordner als Arbeitsbereich."""
+        return dataclasses.replace(self, workspace=workspace)
 
     @property
     def example_systems_dir(self) -> Path | None:
@@ -100,9 +113,22 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     if max_jobs < 1:
         raise ConfigError(f"{ENV_MAX_JOBS}: muss mindestens 1 sein, ist {max_jobs}")
 
+    sessions_root = _optional_path(env, ENV_SESSIONS)
+    if sessions_root is not None and sessions_root.exists() and not sessions_root.is_dir():
+        raise ConfigError(f"{ENV_SESSIONS}: '{sessions_root}' ist kein Verzeichnis")
+    raw_days = env.get(ENV_SESSION_DAYS, "14").strip() or "14"
+    try:
+        session_days = float(raw_days)
+    except ValueError as exc:
+        raise ConfigError(f"{ENV_SESSION_DAYS}: '{raw_days}' ist keine Zahl") from exc
+    if not session_days > 0:
+        raise ConfigError(f"{ENV_SESSION_DAYS}: muss positiv sein, ist {raw_days}")
+
     return Settings(
         workspace=workspace,
         mikroptim_repo=_optional_path(env, ENV_MIKROPTIM_REPO),
         cli=_resolve_cli(env),
         max_jobs=max_jobs,
+        sessions_root=sessions_root,
+        session_days=session_days,
     )

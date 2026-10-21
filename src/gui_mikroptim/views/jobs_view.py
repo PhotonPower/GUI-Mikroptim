@@ -99,6 +99,15 @@ def _details(cfg: Settings, job_id: str) -> None:
     if job.data.get("options"):
         with st.expander("Optionen"):
             st.json(job.data["options"])
+    if job.final:
+        from gui_mikroptim.views.files_view import zip_button
+
+        files = sorted(
+            p.relative_to(job.path).as_posix()
+            for p in job.path.rglob("*")
+            if p.is_file() and not p.name.startswith(".")
+        )
+        zip_button(job.path, files, job.id, f"{KEY}.zip.{job.id}", "Jobordner als ZIP")
     if job.data.get("kind") == "synth":
         _synth_results(job)
 
@@ -129,7 +138,7 @@ def _synth_results(job: jobs.Job) -> None:
 
 def render(cfg: Settings) -> None:
     try:
-        started = jobs.start_pending(cfg.workspace, cfg.max_jobs)
+        started = jobs.start_pending(cfg.workspace, cfg.max_jobs, cfg.sessions_root)
         job_list = jobs.list_jobs(cfg.workspace)
     except jobs.JobError as exc:
         st.error(str(exc))
@@ -137,10 +146,15 @@ def render(cfg: Settings) -> None:
     if started:
         st.toast(f"Gestartet: {', '.join(started)}")
 
-    running = sum(1 for j in job_list if j.status == jobs.RUNNING)
+    running = jobs.running_count(cfg.workspace, cfg.sessions_root)
     waiting = sum(1 for j in job_list if j.status == jobs.WAITING)
     c1, c2, c3 = st.columns([1, 1, 2])
-    c1.metric("laufend", f"{running} / {cfg.max_jobs}", help="MKO_GUI_MAX_JOBS")
+    c1.metric(
+        "laufend",
+        f"{running} / {cfg.max_jobs}",
+        help="Höchstzahl MKO_GUI_MAX_JOBS; mit Sitzungen gezählt über alle Sitzungen, weil sie "
+        "sich die GPU teilen",
+    )
     c2.metric("wartend", waiting)
     if c3.button("Aktualisieren", key=f"{KEY}.neu"):
         st.rerun()

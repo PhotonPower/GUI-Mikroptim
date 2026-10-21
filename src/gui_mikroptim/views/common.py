@@ -23,10 +23,43 @@ def mikroptim_status() -> mko.MikroptimStatus:
     return mko.status()
 
 
+SESSION_KEY = "sitzung.id"
+SESSION_QUERY = "sitzung"
+
+
+def session_settings() -> Settings:
+    """Einstellungen dieser Sitzung (G6-T1).
+
+    Mit ``MKO_GUI_SESSIONS`` ist der Arbeitsbereich der Sitzungsordner. Die Kennung steht in der
+    Adresse (``?sitzung=…``): Neuladen behält den Ordner, ein Lesezeichen führt zurück. Eine neue
+    Sitzung räumt alte Sitzungsordner auf (höchstens stündlich).
+    """
+    from gui_mikroptim.backend import sessions
+
+    base = settings()
+    if base.sessions_root is None:
+        return base
+    from_url = st.query_params.get(SESSION_QUERY)
+    sid = st.session_state.get(SESSION_KEY)
+    created = False
+    if sessions.valid_id(from_url):
+        sid = from_url
+    elif not sessions.valid_id(sid):
+        sid = sessions.new_id()
+        created = True
+    st.session_state[SESSION_KEY] = sid
+    if st.query_params.get(SESSION_QUERY) != sid:
+        st.query_params[SESSION_QUERY] = sid
+    folder = sessions.session_dir(base.sessions_root, sid)
+    if created:
+        sessions.cleanup(base.sessions_root, base.session_days, keep=sid)
+    return base.for_session(folder)
+
+
 def settings_or_stop() -> Settings:
-    """Einstellungen oder eine Fehlermeldung mit ``st.stop()``."""
+    """Einstellungen dieser Sitzung oder eine Fehlermeldung mit ``st.stop()``."""
     try:
-        return settings()
+        return session_settings()
     except ConfigError as exc:
         st.error(f"Konfiguration ungültig: {exc}")
         st.caption("Umgebungsvariablen siehe docs/betrieb.md, Abschnitt „Konfiguration“.")
@@ -59,6 +92,9 @@ def sidebar(version: str):
         else:
             st.caption("Mikroptim: nicht verfügbar")
         placeholder = st.empty()
+        st.page_link(
+            "pages/dateien.py", label="Ergebnisse herunterladen", icon=":material/download:"
+        )
         st.caption(f"GUI-Mikroptim {version}")
     return placeholder
 
@@ -66,7 +102,7 @@ def sidebar(version: str):
 def sidebar_current(placeholder) -> None:
     """Zeile „Aktuelles System“ in der Seitenleiste."""
     try:
-        path = current.get_path(settings())
+        path = current.get_path(session_settings())
     except ConfigError:
         path = None
     placeholder.caption(f"Aktuelles System: {path.name if path else '–'}")

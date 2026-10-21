@@ -97,8 +97,12 @@ def run(job_dir: Path) -> int:
     # Platz frei: wartende Jobs starten (Warteschlange läuft ohne Oberfläche weiter)
     workspace = job_dir.parent.parent
     max_jobs = int(os.environ.get("MKO_GUI_MAX_JOBS", "1") or "1")
+    sessions_env = os.environ.get("MKO_GUI_SESSIONS", "").strip()
+    queue_root = Path(sessions_env).resolve() if sessions_env else None
+    if queue_root is not None and queue_root not in workspace.resolve().parents:
+        queue_root = None  # Job liegt nicht in einem Sitzungsordner
     try:
-        jobs.start_pending(workspace, max_jobs)
+        jobs.start_pending(workspace, max_jobs, queue_root)
     except jobs.JobError as exc:
         print(f"wartende Jobs nicht gestartet: {exc}", file=sys.stderr)
     return 0

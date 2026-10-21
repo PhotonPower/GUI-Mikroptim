@@ -10,6 +10,14 @@ Die Einstellungen auf „Auswertung“ (Ringe, Speichen, Raster, Pupille, Refere
 
 Damit der Browser bei großen Rastern flüssig bleibt, zeigt die GUI höchstens 512 × 512 Bildpunkte pro Karte und höchstens 50.000 Punkte pro Spotdiagramm. Größere OPD-Karten werden blockweise gemittelt, größere PSF-Ausschnitte blockweise über das Maximum zusammengefasst (die Spitze bleibt sichtbar), Spotdiagramme auf jeden k-ten Punkt ausgedünnt; der Titel des Diagramms nennt das dann („Anzeige: Mittel über 2 × 2 Rasterpunkte“). Nur die Anzeige ist reduziert – Kennzahlen, Tabellen, Farbskalen und CSV-Exporte nutzen die vollen Daten von Mikroptim.
 
+## Sitzungen und Dateien (G6)
+
+**Sitzungen:** Ist auf dem Server `MKO_GUI_SESSIONS` gesetzt, hat jede Sitzung ihren eigenen Ordner für Uploads, Ergebnisse, Jobs und Glaskataloge; andere Nutzer sehen ihn nicht. Die Adresse im Browser trägt die Kennung der Sitzung (`?sitzung=…`): Neuladen behält alles, ein **Lesezeichen** führt später zurück. Ordner, die länger nicht benutzt wurden (Standard 14 Tage) und keine laufenden Jobs haben, löscht der Server. Die Startseite zeigt den Sitzungsordner.
+
+**Seite „Dateien“** (auch über „Ergebnisse herunterladen“ in der Seitenleiste): alle Dateien der Sitzung mit Ordner, Größe und Zeit. Ordner und einzelne Dateien auswählen (leer: alle der gewählten Ordner), „ZIP erstellen“ und dann herunterladen; darunter eine einzelne Datei direkt.
+
+**An Ort und Stelle:** „Herunterladen“ neben „Speichern“ nach einer Optimierung lädt das optimierte System direkt herunter, ohne es auf dem Server zu speichern; „Jobordner als ZIP“ in den Details eines beendeten Jobs. Heruntergeladene Systemdateien nennen ihre Glaskataloge als `data/glass/basis.json` bzw. `data/glass/private/<name>` und lassen sich so in jeder Sitzung wieder hochladen und zuordnen (Glaskatalog vorher hochladen).
+
 ## Exporte (G5-T3)
 
 Alles wird im Browser heruntergeladen; die GUI schreibt dafür nichts in den Arbeitsbereich.
@@ -134,6 +142,7 @@ Hat ein System keinen Abschnitt `variables`, kann Mikroptim es nicht optimieren;
 - **Zeitgrenze** (Standard 60 s) und **„Optimierung starten“**: `mikroptim.optimize` läuft direkt in der Seite. Währenddessen stehen Lauf, Zyklus, aktuelle und beste Merit darüber, und der Merit-Verlauf wird laufend gezeichnet (logarithmisch, eine Kurve pro Lauf des Multistarts, abgelehnte Versuchsschritte als Kreuze).
 - **„Abbrechen“** unterbricht den Lauf; die bis dahin gerechneten Zyklen bleiben als Verlauf stehen, das System ist unverändert. Jede andere Eingabe auf der Seite während des Laufs unterbricht ihn ebenso (Streamlit führt die Seite dann neu aus); das wird als „unterbrochen“ gemeldet.
 - **Zeitgrenze erreicht:** Hinweis und Knopf „Als Job rechnen“ – dieselbe Optimierung läuft dann als Job (`mikroptim optimize … --json -o ergebnis.json`) und ist auf der Seite „Jobs und Synthese“ zu verfolgen.
+- **Verlauf beim Multistart:** Alle Läufe beginnen bei Zyklus 1 und liegen übereinander, damit sich die Konvergenz vergleichen lässt. Bis zu drei Läufe haben eigene Farben; ab vier sind alle grau in einer Kurve und nur der **beste Lauf** (kleinste Endmerit) ist rot hervorgehoben, abgelehnte Versuche nur für ihn. Daneben **„Endmerit pro Lauf“**: ein Punkt pro Lauf (logarithmisch), der beste als Stern – zeigt, wie viele Starts dasselbe Minimum finden.
 - **Ergebnis:** Status von Mikroptim, Zyklen und Laufzeit, Merit am Start und am Ende, Zahl der Läufe und bester Lauf, Tabelle der Variablen (Start, Ende, Änderung), Warnungen und der Verlauf. Das Ergebnis bleibt in der Sitzung, solange Datei und Optionen gleich bleiben; nach einer Änderung steht ein Hinweis.
 
 Das Ergebnis ist gleich dem von `mikroptim optimize` mit denselben Optionen (Merit bitgleich).

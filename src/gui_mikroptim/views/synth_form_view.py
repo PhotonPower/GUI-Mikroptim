@@ -139,7 +139,13 @@ def render(cfg: Settings) -> None:
         return
     try:
         job = synth_job.submit_synth(
-            cfg.workspace, entry.path, options, cfg.max_jobs, cfg.read_roots, cfg.cli
+            cfg.workspace,
+            entry.path,
+            options,
+            cfg.max_jobs,
+            cfg.read_roots,
+            cfg.cli,
+            cfg.sessions_root,
         )
     except (ValueError, jobs.JobError) as exc:
         st.error(f"Synthese nicht angelegt: {exc}")
