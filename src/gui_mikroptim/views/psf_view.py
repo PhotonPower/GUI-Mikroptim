@@ -58,8 +58,9 @@ def options_form(
     status: mko.MikroptimStatus, eval_options: compute.EvalOptions
 ) -> tuple[compute.PsfOptions, compute.VectorOptions | None]:
     c1, c2, c3, c4 = st.columns([1, 1, 1, 2])
-    padding = c1.number_input("Zero-Padding Q", 2.0, 16.0, 4.0, step=1.0, key=f"{KEY}.padding")
-    na = c2.number_input(
+    padding = common.number(c1, "Zero-Padding Q", 2.0, 16.0, 4.0, step=1.0, key=f"{KEY}.padding")
+    na = common.number(
+        c2,
         "NA vorgeben",
         0.0,
         1.5,
@@ -69,22 +70,28 @@ def options_form(
         key=f"{KEY}.na",
         help="0: NA aus den Feldstrahlen (Standard von Mikroptim)",
     )
-    model = c3.radio("Modell", ["skalar", "vektoriell"], horizontal=True, key=f"{KEY}.modell")
+    model = common.radio(
+        c3, "Modell", ["skalar", "vektoriell"], horizontal=True, key=f"{KEY}.modell"
+    )
     psf_options = compute.PsfOptions(
         float(padding), float(na), eval_options.gpu, eval_options.device
     )
     if model == "skalar":
         return psf_options, None
     pol_col, defocus_col = c4.columns(2)
-    polarization = pol_col.selectbox(
+    polarization = common.select(
+        pol_col,
         "Polarisation",
         list(compute.POLARIZATIONS),
         format_func=POLARIZATION_LABELS.get,
         key=f"{KEY}.polarisation",
     )
-    defocus = defocus_col.number_input(
+    defocus = common.number(
+        defocus_col,
         "Defokus [mm]",
-        value=0.0,
+        -10.0,
+        10.0,
+        0.0,
         step=0.001,
         format="%.4f",
         key=f"{KEY}.defokus",
@@ -155,18 +162,24 @@ def render(
 
     fields, wavelengths = ev.stats["rms_opd"].shape
     c1, c2, c3, c4 = st.columns([1, 1, 1, 1])
-    f = c1.selectbox(
+    f = common.select(
+        c1,
         "Feld",
         list(range(fields)),
         format_func=dict(enumerate(field_labels(fields, system.field_angles_deg))).get,
         key=f"{KEY}.feld",
     )
     wl_labels = wavelength_labels(system.wavelengths_nm, system.reference_nm)
-    j = c2.selectbox(
-        "Wellenlänge", list(range(wavelengths)), format_func=wl_labels.__getitem__, key=f"{KEY}.wl"
+    j = common.select(
+        c2,
+        "Wellenlänge",
+        list(range(wavelengths)),
+        format_func=wl_labels.__getitem__,
+        key=f"{KEY}.wl",
     )
-    log = c3.toggle("logarithmisch", value=False, key=f"{KEY}.log")
-    airy = c4.number_input(
+    log = common.toggle(c3, "logarithmisch", value=False, key=f"{KEY}.log")
+    airy = common.number(
+        c4,
         "Ausschnitt [Airy-Radien]",
         0.0,
         500.0,

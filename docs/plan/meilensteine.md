@@ -138,7 +138,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** Caching überprüfen, große Raster ausdünnen (`Scattergl`), Ladezeiten messen.
 - **Abnahme:** Seitenwechsel ohne neue Rechnung < 1 s bei gecachten Ergebnissen; Messwerte im PR.
 
-### G5-T4 – Einstellungen über Seitenwechsel behalten
+### G5-T4 – Einstellungen über Seitenwechsel behalten ✅
 - **Abhängig von:** G2, G3
 - **Inhalt:** Streamlit verwirft Widget-Zustände nicht angezeigter Seiten; nach einem Seitenwechsel stehen z. B. Raster, Ringe oder Optimierungsoptionen wieder auf dem Standard. Einstellungen pro Seite in eigenen Sitzungsschlüsseln merken und beim Zurückkehren als Startwert setzen (wie `aktuell.datei`).
 - **Abnahme:** AppTest: Raster 256 auf „Auswertung“ → „System“ → zurück → Raster 256; gleiche Prüfung für Optionen der Optimierung und der PSF.

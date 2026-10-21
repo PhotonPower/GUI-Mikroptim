@@ -2,6 +2,10 @@
 
 Die GUI hat eine Navigation am linken Rand. In der Seitenleiste stehen die Versionen von Mikroptim und der GUI und ob GPUs verfügbar sind.
 
+## Einstellungen bleiben erhalten (G5-T4)
+
+Die Einstellungen auf „Auswertung“ (Ringe, Speichen, Raster, Pupille, Referenz, Feld, Wellenlänge, Abzug, PSF-Optionen, GPU) und „Optimierung“ (alle Optionen und die Zeitgrenze) bleiben beim Wechsel auf eine andere Seite und zurück erhalten, solange der Browser-Tab offen ist. Gibt es einen gemerkten Wert beim neuen System nicht (z. B. Feld 2 bei einem System mit einem Feld), gilt wieder der Standard.
+
 ## Große Raster (G5-T2)
 
 Damit der Browser bei großen Rastern flüssig bleibt, zeigt die GUI höchstens 512 × 512 Bildpunkte pro Karte und höchstens 50.000 Punkte pro Spotdiagramm. Größere OPD-Karten werden blockweise gemittelt, größere PSF-Ausschnitte blockweise über das Maximum zusammengefasst (die Spitze bleibt sichtbar), Spotdiagramme auf jeden k-ten Punkt ausgedünnt; der Titel des Diagramms nennt das dann („Anzeige: Mittel über 2 × 2 Rasterpunkte“). Nur die Anzeige ist reduziert – Kennzahlen, Tabellen, Farbskalen und CSV-Exporte nutzen die vollen Daten von Mikroptim.
