@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from gui_mikroptim.backend import mko
+from gui_mikroptim.backend import export, mko
 from gui_mikroptim.config import ConfigError, Settings, load_settings
 from gui_mikroptim.views import current
 
@@ -78,3 +78,20 @@ def planned(title: str, tasks: list[tuple[str, str]], intro: str) -> None:
     st.info(intro)
     st.markdown("**Geplante Aufgaben** (docs/plan/meilensteine.md):")
     st.markdown("\n".join(f"- `{task_id}` {text}" for task_id, text in tasks))
+
+
+def chart(fig, key: str, container=None, filename: str | None = None) -> None:
+    """``plotly_chart`` mit voller Breite und Bildexport (SVG, Dateiname aus dem Schlüssel)."""
+    target = st if container is None else container
+    target.plotly_chart(fig, width="stretch", key=key, config=export.plotly_config(filename or key))
+
+
+def download_csv(rows: list[dict], filename: str, key: str, label: str = "CSV") -> None:
+    """Download-Knopf für Tabellenzeilen als CSV (im Speicher erzeugt)."""
+    st.download_button(
+        label,
+        export.rows_to_csv(rows).encode("utf-8"),
+        file_name=f"{export.safe_stem(filename)}.csv",
+        mime="text/csv",
+        key=key,
+    )

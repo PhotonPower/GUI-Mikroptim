@@ -138,7 +138,7 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 - **Inhalt:** Caching überprüfen, große Raster ausdünnen (`Scattergl`), Ladezeiten messen.
 - **Abnahme:** Seitenwechsel ohne neue Rechnung < 1 s bei gecachten Ergebnissen; Messwerte im PR.
 
-### G5-T3 – Export
+### G5-T3 – Export ✅
 - **Abhängig von:** G2
 - **Inhalt:** Tabellen als CSV, Diagramme als PNG/SVG (Plotly), kurzer Bericht eines Systems als Markdown.
 - **Abnahme:** Exporte im Test erzeugt und gelesen.

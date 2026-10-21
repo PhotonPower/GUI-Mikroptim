@@ -16,7 +16,7 @@ Abgeschlossen sind G0 bis G4 des [Meilensteinplans](docs/plan/meilensteine.md):
 | Optimierung | Variablen und Optionen, Lauf mit Live-Verlauf, Abbruch und Zeitgrenze, Vorher/Nachher, Speichern des Ergebnisses |
 | Jobs und Synthese | Protokollbrowser für `mikroptim.synth/1`, Jobverwaltung für lange Läufe, Synthese als Job, Ergebnisordner von Läufen (z. B. M6-T6) |
 
-Alle angezeigten Zahlen kommen aus Mikroptim und sind gegen dessen Kommandozeile getestet (meist bitgleich). Offen ist G5 (Betrieb auf dem Server, Leistung, Exporte).
+Alle angezeigten Zahlen kommen aus Mikroptim und sind gegen dessen Kommandozeile getestet (meist bitgleich). Dazu Exporte (G5-T3): Diagramme als SVG, Tabellen als CSV, Systembericht als Markdown. Offen sind G5-T1 (Betrieb auf dem Server) und G5-T2 (Leistung).
 
 ## Schnellstart
 

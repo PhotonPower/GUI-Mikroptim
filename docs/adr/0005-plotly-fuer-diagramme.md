@@ -14,6 +14,10 @@ Die GUI zeigt OPD-Karten (2D mit NaN außerhalb der Pupille), PSF (logarithmisch
 - Einheitliche Regeln: Achsen mit Einheit, OPD in Wellen bei λ_ref mit divergierender, um 0 symmetrischer Farbskala, Seitenverhältnis 1 bei Pupillen- und Bildebenen-Darstellungen.
 - Stammbäume als Graphviz-DOT über `st.graphviz_chart` (keine zusätzliche Abhängigkeit).
 
+## Nachtrag 2026-10-21 (G5-T3)
+
+Alle Diagramme laufen über `views.common.chart`, das die Kamera-Schaltfläche von Plotly auf SVG mit Dateinamen aus dem Schlüssel des Diagramms einstellt. Der Bildexport geschieht im Browser; eine serverseitige Bildbibliothek (kaleido) ist nicht nötig.
+
 ## Konsequenzen
 
 - Interaktive Diagramme ohne eigenen JavaScript-Code.

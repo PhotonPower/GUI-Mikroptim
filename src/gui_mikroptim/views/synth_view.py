@@ -8,6 +8,7 @@ from typing import Any
 import streamlit as st
 
 from gui_mikroptim.backend import protocols
+from gui_mikroptim.views import common
 from gui_mikroptim.views.synth_plots import synth_progress_figure
 
 STEP_COLUMNS = [
@@ -93,7 +94,7 @@ def steps_section(proto: protocols.SynthProtocol, key: str) -> None:
     if not steps:
         st.info("Das Protokoll enthält keine Schritte.")
         return
-    st.plotly_chart(synth_progress_figure(steps), width="stretch", key=f"{key}.verlauf")
+    common.chart(synth_progress_figure(steps), key=f"{key}.verlauf")
 
     st.markdown("**Schritte**")
     c1, c2, c3, c4 = st.columns(4)
@@ -108,6 +109,7 @@ def steps_section(proto: protocols.SynthProtocol, key: str) -> None:
     accepted = {"alle": None, "ja": True, "nein": False}[accepted_choice]
     rows = protocols.filter_steps(steps, kinds, actions, accepted, candidate)
     st.caption(f"{len(rows)} von {len(steps)} Schritten")
+    common.download_csv(rows, "synthese_schritte", f"{key}.csv")
     st.dataframe(
         [{k: r.get(k) for k in STEP_COLUMNS if k != "kandidat" or candidates} for r in rows],
         hide_index=True,

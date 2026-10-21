@@ -8,7 +8,7 @@ import streamlit as st
 
 from gui_mikroptim.backend import compute, mko
 from gui_mikroptim.backend.files import FileEntry
-from gui_mikroptim.views import eval_view
+from gui_mikroptim.views import common, eval_view
 from gui_mikroptim.views.psf_plots import mtf_figure, psf_figure
 from gui_mikroptim.views.wavefront_plots import field_labels, wavelength_labels
 
@@ -206,13 +206,12 @@ def render(
     half_width = float(airy) * result.airy_radius if airy else None
     left, right = st.columns(2)
     with left:
-        st.plotly_chart(
+        common.chart(
             psf_figure(result.psf, result.dx, result.dy, half_width, bool(log), "PSF"),
-            width="stretch",
             key=f"{KEY}.psf",
         )
     with right:
-        st.plotly_chart(
+        common.chart(
             mtf_figure(
                 result.frequencies,
                 result.mtf_sagittal,
@@ -221,7 +220,6 @@ def render(
                 result.cutoff_y,
                 "MTF",
             ),
-            width="stretch",
             key=f"{KEY}.mtf",
         )
     if result.components is not None:
@@ -229,9 +227,8 @@ def render(
             cols = st.columns(3)
             for col, name, comp in zip(cols, ("E_x", "E_y", "E_z"), result.components, strict=True):
                 with col:
-                    st.plotly_chart(
+                    common.chart(
                         psf_figure(comp, result.dx, result.dy, half_width, True, f"|{name}|²"),
-                        width="stretch",
                         key=f"{KEY}.{name}",
                     )
 
