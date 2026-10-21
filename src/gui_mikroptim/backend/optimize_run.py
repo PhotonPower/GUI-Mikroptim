@@ -98,6 +98,7 @@ def submit_optimize_job(
     max_jobs: int,
     allowed_roots: list[Path],
     cli: Path | None = None,
+    queue_root: Path | None = None,
 ) -> jobs.Job:
     """Dieselbe Optimierung als Job (für Läufe über der Zeitgrenze, ADR-0003)."""
     from gui_mikroptim.backend.synth_job import copy_system_with_catalogs
@@ -115,6 +116,7 @@ def submit_optimize_job(
         options={"optimize": options.to_dict(), "system": system_path.name},
         mikroptim_version=mko.status().version,
         copy_system=copy_system_with_catalogs,
+        queue_root=queue_root,
     )
 
 

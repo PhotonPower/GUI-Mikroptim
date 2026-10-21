@@ -82,3 +82,32 @@ def test_system_report_sections():
 def test_system_report_without_paraxial_and_wavefront():
     text = export.system_report(_system(), {}, None)
     assert "_nicht verfügbar_" in text and "## RMS-Wellenfront" not in text
+
+
+def test_zip_files_and_paths(tmp_path):
+    import zipfile
+
+    (tmp_path / "a").mkdir()
+    (tmp_path / "a" / "x.json").write_text("1")
+    (tmp_path / "b.txt").write_text("2")
+    (tmp_path.parent / "draussen.txt").write_text("geheim")
+    data = export.zip_files(tmp_path, ["a/x.json", "b.txt", "../draussen.txt", "fehlt.txt"])
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        assert sorted(archive.namelist()) == ["a/x.json", "b.txt"]
+        assert archive.read("a/x.json") == b"1"
+
+
+def test_portable_catalog_entry(tmp_path):
+    repo, ws = tmp_path / "Mikroptim", tmp_path / "ws"
+    (repo / "data" / "glass").mkdir(parents=True)
+    (ws / "kataloge").mkdir(parents=True)
+    assert (
+        export.portable_catalog_entry(repo / "data" / "glass" / "basis.json", repo, ws)
+        == "data/glass/basis.json"
+    )
+    assert (
+        export.portable_catalog_entry(ws / "kataloge" / "schott.json", repo, ws)
+        == "data/glass/private/schott.json"
+    )
+    other = tmp_path / "anderswo.json"
+    assert export.portable_catalog_entry(other, None, ws) == str(other.resolve())

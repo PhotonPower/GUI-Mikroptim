@@ -166,8 +166,10 @@ def detached_popen_kwargs() -> dict[str, Any]:
     return {"start_new_session": True}
 
 
-def _launch(job_dir: Path, max_jobs: int) -> None:
+def _launch(job_dir: Path, max_jobs: int, queue_root: Path | None = None) -> None:
     env = dict(os.environ)
+    if queue_root is not None:
+        env["MKO_GUI_SESSIONS"] = str(queue_root)  # Wrapper startet danach Jobs aller Sitzungen
     env["PYTHONUNBUFFERED"] = "1"
     # Python-Befehle (z. B. python -m mikroptim) schreiben auch unter Windows UTF-8 in die
     # umgeleiteten Ausgaben; sonst würden Umlaute in ausgabe.txt in cp1252 landen
@@ -279,16 +281,35 @@ def _queue_key(job: Job) -> tuple[int, str, str]:
     return (int(job.data.get("created_ns") or 0), str(job.data.get("created", "")), job.id)
 
 
-def running_count(workspace: Path) -> int:
-    return sum(1 for j in list_jobs(workspace) if j.status == RUNNING)
+def queue_jobs(workspace: Path, queue_root: Path | None = None) -> list[Job]:
+    """Alle Jobs der Warteschlange: mit Sitzungen (``queue_root``) die aller Sitzungsordner,
+    sonst die des Arbeitsbereichs (G6-T1)."""
+    if queue_root is None:
+        return list_jobs(workspace)
+    from gui_mikroptim.backend import sessions
+
+    result: list[Job] = []
+    for folder in sessions.all_sessions(queue_root):
+        if (folder / JOBS_SUBDIR).is_dir():
+            result.extend(list_jobs(folder))
+    return result
 
 
-def start_pending(workspace: Path, max_jobs: int) -> list[str]:
-    """Startet wartende Jobs (älteste zuerst), solange weniger als ``max_jobs`` laufen."""
-    root = jobs_root(workspace)
+def running_count(workspace: Path, queue_root: Path | None = None) -> int:
+    return sum(1 for j in queue_jobs(workspace, queue_root) if j.status == RUNNING)
+
+
+def start_pending(workspace: Path, max_jobs: int, queue_root: Path | None = None) -> list[str]:
+    """Startet wartende Jobs (älteste zuerst), solange weniger als ``max_jobs`` laufen.
+
+    Mit ``queue_root`` (Wurzel der Sitzungsordner) gilt die Grenze für alle Sitzungen zusammen,
+    und es startet der älteste wartende Job aller Sitzungen.
+    """
+    root = jobs_root(workspace) if queue_root is None else queue_root.resolve()
+    root.mkdir(parents=True, exist_ok=True)
     started = []
     with _lock(root):
-        jobs = list_jobs(workspace)
+        jobs = queue_jobs(workspace, queue_root)
         free = max_jobs - sum(1 for j in jobs if j.status == RUNNING)
         waiting = sorted((j for j in jobs if j.status == WAITING), key=_queue_key)
         for job in waiting:
@@ -299,7 +320,7 @@ def start_pending(workspace: Path, max_jobs: int) -> list[str]:
                 os.close(fd)
             except FileExistsError:
                 continue
-            _launch(job.path, max_jobs)
+            _launch(job.path, max_jobs, queue_root)
             started.append(job.id)
             free -= 1
     return started
@@ -340,6 +361,7 @@ def submit(
     mikroptim_version: str | None = None,
     copy_system: Any = None,
     start: bool = True,
+    queue_root: Path | None = None,
 ) -> Job:
     """Legt einen Job an und startet ihn, wenn ein Platz frei ist.
 
@@ -399,7 +421,7 @@ def submit(
     }
     write_json_atomic(job_dir / JOB_FILE, data)
     if start:
-        start_pending(workspace, max_jobs)
+        start_pending(workspace, max_jobs, queue_root)
     return load(job_dir)
 
 

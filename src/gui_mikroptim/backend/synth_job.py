@@ -167,6 +167,7 @@ def submit_synth(
     max_jobs: int,
     allowed_roots: list[Path],
     cli: Path | None = None,
+    queue_root: Path | None = None,
 ) -> jobs.Job:
     """Legt den Synthese-Job an (und startet ihn, wenn ein Platz frei ist)."""
     status = mko.status()
@@ -180,6 +181,7 @@ def submit_synth(
         options={"synth": options.to_dict(), "system": system_path.name},
         mikroptim_version=status.version,
         copy_system=copy_system_with_catalogs,
+        queue_root=queue_root,
     )
 
 

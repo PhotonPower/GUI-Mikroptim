@@ -142,3 +142,62 @@ def system_report(
         parts.append(markdown_table([{k: r[k] for k in keep} for r in rows]))
     parts.append("\n_Erzeugt mit GUI-Mikroptim; alle Zahlen aus Mikroptim._\n")
     return "\n".join(parts)
+
+
+# --- Herunterladen (G6-T2) ---------------------------------------------------------------------
+
+#: oberhalb dieser Größe warnt die Seite „Dateien“ vor dem Erstellen eines ZIP
+LARGE_ZIP_BYTES = 200 * 1024 * 1024
+
+
+def zip_files(base: Any, relative_paths: list[str]) -> bytes:
+    """ZIP im Speicher mit den Dateien ``base/<pfad>`` (Pfade im Archiv relativ zu ``base``)."""
+    import zipfile
+    from pathlib import Path
+
+    base = Path(base).resolve()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for rel in relative_paths:
+            path = (base / rel).resolve()
+            if base not in path.parents or not path.is_file():
+                continue  # nur Dateien unter base
+            archive.write(path, arcname=Path(rel).as_posix())
+    return buffer.getvalue()
+
+
+def portable_catalog_entry(path: Any, repo: Any, workspace: Any) -> str:
+    """Übertragbare Form eines Katalogpfads für heruntergeladene Systemdateien.
+
+    Kataloge aus dem Mikroptim-Checkout relativ zu ihm (``data/glass/basis.json``), hochgeladene
+    als ``data/glass/private/<name>``; die GUI ordnet beides beim erneuten Hochladen wieder zu
+    (ADR-0006). Sonst bleibt der Pfad unverändert.
+    """
+    from pathlib import Path
+
+    path = Path(path).resolve()
+    if repo is not None:
+        repo = Path(repo).resolve()
+        if repo in path.parents:
+            return path.relative_to(repo).as_posix()
+    uploaded = (Path(workspace) / "kataloge").resolve()
+    if uploaded in path.parents:
+        return f"data/glass/private/{path.name}"
+    return str(path)
+
+
+def system_download(system: Any, repo: Any, workspace: Any) -> bytes:
+    """Systemdatei eines ``mikroptim.System`` zum Herunterladen (über ``System.save``) mit
+    übertragbaren Katalogpfaden."""
+    import json
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory(prefix="gui-mikroptim-") as tmp:
+        target = Path(tmp) / "system.json"
+        system.save(str(target))
+        data = json.loads(target.read_text(encoding="utf-8"))
+    data["glass_catalogs"] = [
+        portable_catalog_entry(p, repo, workspace) for p in system.catalog_files
+    ]
+    return (json.dumps(data, indent=2, ensure_ascii=False) + "\n").encode("utf-8")

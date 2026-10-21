@@ -52,9 +52,11 @@ Alle Einstellungen über Umgebungsvariablen (`gui_mikroptim/config.py`):
 | Variable | Standard | Bedeutung |
 |---|---|---|
 | `MKO_GUI_WORKSPACE` | `arbeitsbereich/` im Checkout | Einziges Verzeichnis, in das die GUI schreibt (`uploads/`, `ergebnisse/`, `jobs/`, `kataloge/` für hochgeladene Glaskataloge, ADR-0006). Auf dem Server außerhalb des Checkouts, z. B. `~/gui-mikroptim-daten`. |
+| `MKO_GUI_SESSIONS` | – | Wurzel der Sitzungsordner (ADR-0007). Gesetzt: jede Sitzung schreibt nur in `<MKO_GUI_SESSIONS>/<kennung>/` (`uploads/`, `ergebnisse/`, `jobs/`, `kataloge/`); die Kennung steht in der Adresse (`?sitzung=…`). Nicht gesetzt: ein gemeinsamer Arbeitsbereich `MKO_GUI_WORKSPACE`. Für mehrere Nutzer empfohlen, z. B. `~/gui-mikroptim-sitzungen`. |
+| `MKO_GUI_SESSION_DAYS` | `14` | Sitzungsordner ohne Zugriff und ohne laufenden Job werden nach so vielen Tagen gelöscht (beim Anlegen neuer Sitzungen, höchstens stündlich). |
 | `MKO_GUI_MIKROPTIM_REPO` | – | Mikroptim-Checkout; liefert die Beispielsysteme (`data/systems`) und Glaskataloge. Wird nur gelesen. |
 | `MKO_GUI_CLI` | – | Programm `mikroptim` für Jobs (Pfad oder Name im `PATH`); ohne: `python -m mikroptim` |
-| `MKO_GUI_MAX_JOBS` | `1` | höchstens gleichzeitig laufende Jobs |
+| `MKO_GUI_MAX_JOBS` | `1` | höchstens gleichzeitig laufende Jobs, mit Sitzungen über alle Sitzungen zusammen |
 
 Streamlit-Einstellungen stehen in `.streamlit/config.toml` (Bindung, Upload-Grenze 20 MB, keine Telemetrie).
 
@@ -104,6 +106,8 @@ journalctl --user -u gui-mikroptim -f
 Jobs laufen in eigenen Sitzungen bzw. Prozessgruppen (docs/architektur.md, „Jobs“); zusammen mit `KillMode=process` beendet ein Neustart oder Stopp des Dienstes keinen laufenden Synthese-Lauf. Wartende Jobs startet der Wrapper eines endenden Jobs, auch wenn die GUI gerade nicht läuft. Ein Neustart des Rechners bricht laufende Jobs dagegen ab; sie erscheinen danach als „fehler“ mit Hinweis.
 
 ## Sicherheit
+
+- Mit `MKO_GUI_SESSIONS` sehen Nutzer nur ihre eigenen Dateien und Jobs (ADR-0007). Die Adresse mit `?sitzung=…` ist der Zugang zu den Daten einer Sitzung: nicht weitergeben, wenn die Daten vertraulich sind.
 
 - Die GUI hat **keine Anmeldung**. Schutz entsteht ausschließlich dadurch, dass sie nur an `127.0.0.1` lauscht und der Zugang über SSH läuft (ADR-0004). Wer auf dem Server angemeldet ist, kann die GUI erreichen; auf Mehrbenutzerservern deshalb eigene Ports pro Nutzer und einen eigenen Arbeitsbereich.
 - Nicht über einen Reverse-Proxy ins Netz stellen, ohne zuerst eine neue ADR mit Authentifizierung.

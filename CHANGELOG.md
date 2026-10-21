@@ -5,6 +5,11 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionier
 ## [Unreleased]
 
 ### Hinzugefügt
+- G6-T1: Sitzungsordner (ADR-0007): Mit `MKO_GUI_SESSIONS` arbeitet jede Sitzung in `<MKO_GUI_SESSIONS>/<kennung>/` (`uploads/`, `ergebnisse/`, `jobs/`, `kataloge/`); Kennung zufällig und in der Adresse (`?sitzung=…`), Neuladen und Lesezeichen behalten den Ordner; gemeinsame Warteschlange der Jobs über alle Sitzungen; alte Ordner ohne laufende Jobs werden nach `MKO_GUI_SESSION_DAYS` (Standard 14) gelöscht (`backend/sessions.py`).
+- G6-T2: Herunterladen: Seite „Dateien“ (alle Dateien der Sitzung, ZIP der Auswahl, einzelne Datei; Verweis in der Seitenleiste), „Herunterladen“ des optimierten Systems ohne Speichern, „Jobordner als ZIP“; heruntergeladene Systemdateien mit übertragbaren Katalogpfaden (`export.system_download`), Zuordnung zusätzlich über Mikroptims `data/glass/` nach Dateiname.
+- G6-T3: Verlauf beim Multistart übersichtlich: Läufe übereinander ab Zyklus 1, ab vier Läufen grau mit rot hervorgehobenem besten Lauf (Legende höchstens drei Einträge), Diagramm „Endmerit pro Lauf“.
+
+### Hinzugefügt
 - G1-T4: Glaskataloge hochladen (ADR-0006): Bereich „Glaskataloge“ auf der Seite „System“ mit Liste, Upload (Aufbau geprüft, dann von Mikroptim mit einem Prüfsystem geladen; abgelehnte Kataloge werden nicht gespeichert), Hinweis auf Gläser, die auch in Mikroptims Katalogen stehen, und Löschen mit Bestätigung; Ablage unter `kataloge/` im Arbeitsbereich (`backend/catalogs.py`, `views/catalog_view.py`). Fehlende Katalogeinträge einer Systemdatei ordnet die GUI dem Mikroptim-Checkout und den hochgeladenen Katalogen zu (Tabelle „gefunden: Datei/Mikroptim/Arbeitsbereich/fehlt“), „Glaskataloge zuordnen und neu speichern“ lässt Mikroptim die Datei damit laden und neu schreiben. Wunsch W9 an Mikroptim (Suchpfad für Kataloge).
 
 ### Behoben

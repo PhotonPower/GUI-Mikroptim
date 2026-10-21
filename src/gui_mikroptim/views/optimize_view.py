@@ -244,7 +244,13 @@ def _show_outcome(cfg, entry, options, state, merit_history_figure) -> None:
         if st.button("Als Job rechnen", key=f"{KEY}.job"):
             try:
                 job = optimize_run.submit_optimize_job(
-                    cfg.workspace, entry.path, options, cfg.max_jobs, cfg.read_roots, cfg.cli
+                    cfg.workspace,
+                    entry.path,
+                    options,
+                    cfg.max_jobs,
+                    cfg.read_roots,
+                    cfg.cli,
+                    cfg.sessions_root,
                 )
             except (ValueError, jobs.JobError) as exc:
                 st.error(f"Job nicht angelegt: {exc}")
@@ -260,7 +266,16 @@ def _show_outcome(cfg, entry, options, state, merit_history_figure) -> None:
         st.error(state.get("note") or "Fehler")
     if history:
         common.download_csv(history, f"{entry.path.stem}_verlauf", f"{KEY}.csv.verlauf")
-        common.chart(merit_history_figure(history), key=f"{KEY}.verlauf")
+        from gui_mikroptim.views.optimize_plots import run_summary_figure, runs_of
+
+        if len(runs_of(history)) >= 2:
+            left, right = st.columns([3, 2])
+            with left:
+                common.chart(merit_history_figure(history), key=f"{KEY}.verlauf")
+            with right:
+                common.chart(run_summary_figure(history), key=f"{KEY}.endmerit")
+        else:
+            common.chart(merit_history_figure(history), key=f"{KEY}.verlauf")
 
 
 # --- Ergebnis: Vorher/Nachher und Speichern (G3-T3) --------------------------------------------
@@ -329,6 +344,22 @@ def _save(cfg, entry: FileEntry, result: Any) -> None:
         key=f"{KEY}.dateiname",
     )
     adopt = c2.checkbox("als aktuelles System übernehmen", value=True, key=f"{KEY}.uebernehmen")
+    from gui_mikroptim.backend import export
+
+    try:
+        download = export.system_download(result.system, cfg.mikroptim_repo, cfg.workspace)
+    except Exception:  # Herunterladen ist eine Zugabe; Speichern bleibt möglich
+        download = None
+    if download is not None:
+        c3.download_button(
+            "Herunterladen",
+            download,
+            file_name=name if name.endswith(".json") else f"{name}.json",
+            mime="application/json",
+            key=f"{KEY}.herunterladen",
+            help="Das optimierte System als Datei auf den eigenen Rechner (Katalogpfade "
+            "übertragbar: data/glass/…), ohne es auf dem Server zu speichern.",
+        )
     if c3.button("Speichern", key=f"{KEY}.speichern"):
         try:
             target = optimize_run.save_result(result, cfg.workspace, name)

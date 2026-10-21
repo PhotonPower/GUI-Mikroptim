@@ -48,6 +48,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `views/compare_view.py` | G2-T4 | Reiter „Vergleich“: Wahl von B, Kennzahlen, Differenz-Heatmap (`wavefront_plots.rms_difference_heatmap`) oder Heatmaps nebeneinander, Paraxialdaten, Linsenschnitte |
 | `views/synth_form_view.py` | G4-T3 | Reiter „Neue Synthese“: Startsystem, Formular (`st.form`), Anlegen des Jobs |
 | `views/folder_view.py` | G4-T4 | Reiter „Ergebnisordner“ mit Überblick, Bericht, Stufen, Tabellen und Sprüngen in System, Auswertung und Vergleich (`st.switch_page`) |
+| `views/files_view.py` | G6-T2 | Seite „Dateien“: Dateien der Sitzung, ZIP der Auswahl (zweistufig), einzelne Datei; `zip_button` auch für Jobordner |
 | `views/jobs_view.py` | G4-T1 | Reiter „Jobs“: Liste, Details mit Selbstaktualisierung (`st.fragment(run_every=2 s)`) solange der Job läuft, Abbruch |
 | `views/optimize_view.py` | G3-T1 | Variablen (mit Rückfall auf die Datei), Formular der Optionen mit gesperrten ungültigen Kombinationen, Befehl |
 | `views/optimize_plots.py` | G3-T2 | Merit-Verlauf pro Lauf mit abgelehnten Versuchen (rein) |
@@ -71,6 +72,7 @@ Die GUI ist eine dünne Schicht über Mikroptim (ADR-0002). Sie lädt Dateien, r
 | `backend/optimize_run.py` | G3-T2, G3-T3 | Lauf von `mikroptim.optimize` mit Rückruf (Verlauf), Abbruch, Zeitgrenze; fremde Ausnahmen (Unterbrechung durch Streamlit) werden durchgereicht; Optimierung als Job; `save_result` (neue Datei unter `ergebnisse/` über `System.save`, nie überschreibend) |
 | `backend/result_folder.py` | G4-T4 | Ergebnisordner: Dateien nach Mikroptim-Format und Stufenkürzel gliedern, Bericht finden, Kennzahlen von Systemen, Protokollen und Auswertungen aus den Dateien |
 | `backend/export.py` | G5-T3 | CSV (volle Genauigkeit, wieder einlesbar), Markdown-Tabellen und Systembericht, Bildoptionen für Plotly (SVG, Dateiname) |
+| `backend/sessions.py` | G6-T1 | Sitzungskennungen, Sitzungsordner, Aufräumen alter Ordner (ohne laufende Jobs) |
 | `backend/jobs.py` | G4-T1 | Jobs anlegen (`submit`), Warteschlange (`start_pending`), Status (`load`, `list_jobs`, `effective_status`), Abbruch (`cancel`), Ablage `gui-mikroptim.job/1`, Prozessprüfung für Linux und Windows |
 | `backend/job_runner.py` | G4-T1 | Wrapper eines Jobs: Befehl starten, Ausgaben umleiten, Abbruch überwachen, Status schreiben, nächste Jobs starten |
 | `backend/compute.py` | G1-T2 | dünne Hüllen um Mikroptim: `load_system`, `details` (Systembeschreibung, Paraxialdaten, Variablen mit Teilfehlern), `load_error` (Ausnahme → Art, Meldung, JSON-Pfad), `repair_catalogs` (über `System.from_json`/`save`); `TraceOptions` und `trace_wavefront` (G2-T1, Ergebnis als picklebare `WavefrontResult` mit NumPy-Arrays); `EvalOptions`, `evaluate` und `mm_to_waves` (G2-T2, Umrechnung genau wie `mikroptim eval`); `PsfOptions`, `VectorOptions`, `scalar_psf`, `vector_psf` (über `run_cli` mit temporären CSV-Dateien) und `window_warning` (Regel von `mikroptim eval`) mit Ergebnis `PsfResult` (G2-T3) |
@@ -99,6 +101,10 @@ Streamlit führt das Seitenskript bei jeder Interaktion neu aus. Daraus folgen f
 - **Tests:** `AppTest.switch_page` führt nur das Seitenskript aus, nicht den Einstieg `app.py`; die Seitenleiste wird deshalb über einen normalen Lauf des Einstiegs getestet.
 - **Lauf in der Seite (Optimierung):** Ein Klick während eines Laufs lässt Streamlit die Seite neu starten und unterbricht den laufenden Skriptdurchlauf beim nächsten Streamlit-Aufruf, also im Rückruf von `mikroptim.optimize`; die Unterbrechung bricht die Optimierung ab. Der Verlauf liegt deshalb laufend in `st.session_state` („optimierung.lauf“), und der neue Durchlauf meldet „abgebrochen“ bzw. „unterbrochen“.
 - Der Streamlit-Prozess wird von allen Browsersitzungen geteilt. GPU-Rechnungen im Prozess sind kurz zu halten; was länger dauert, wird ein Job.
+
+## Sitzungen (G6-T1)
+
+Mit `MKO_GUI_SESSIONS` liefert `common.session_settings()` (über `settings_or_stop()` auf jeder Seite) Einstellungen, deren `workspace` der Ordner der Sitzung ist (`backend/sessions.py`, ADR-0007). Die Kennung kommt aus der Adresse (`?sitzung=`), sonst aus `st.session_state`, sonst neu; sie wird in die Adresse zurückgeschrieben. Alle Module schreiben weiter nur unter `cfg.workspace` – die Trennung entsteht allein dadurch. Die Warteschlange der Jobs zählt und startet über alle Sitzungsordner (`jobs.queue_jobs`, `start_pending(…, queue_root)`); der Wrapper bekommt die Wurzel über `MKO_GUI_SESSIONS` in seiner Umgebung.
 
 ## Jobs (G4-T1)
 

@@ -156,6 +156,22 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
 
 ---
 
+## G6 – Mehrere Nutzer ✅
+
+Vorgabe des Maintainers (2026-10-21): Sitzungsordner, Herunterladen, übersichtlicher Multistart.
+
+### G6-T1 – Sitzungsordner ✅
+- **Inhalt:** `MKO_GUI_SESSIONS`, ein Ordner pro Sitzung mit Kennung in der Adresse, gemeinsame Warteschlange, Aufräumen (ADR-0007).
+- **Abnahme:** Sitzungen sehen ihre Dateien gegenseitig nicht; Neuladen und Lesezeichen führen zum selben Ordner; die Höchstzahl der Jobs gilt über alle Sitzungen; alte Ordner ohne laufende Jobs werden gelöscht.
+
+### G6-T2 – Herunterladen ✅
+- **Inhalt:** Seite „Dateien“ (ZIP der Auswahl, einzelne Dateien), „Herunterladen“ nach der Optimierung, „Jobordner als ZIP“; übertragbare Katalogpfade.
+- **Abnahme:** ZIP enthält genau die gewählten Dateien; ein heruntergeladenes Optimierungsergebnis lässt sich in einer anderen Sitzung hochladen, zuordnen und reproduziert die Endmerit.
+
+### G6-T3 – Verlauf beim Multistart ✅
+- **Inhalt:** Läufe übereinander ab Zyklus 1, ab vier Läufen grau mit hervorgehobenem besten Lauf, Diagramm „Endmerit pro Lauf“.
+- **Abnahme:** 40 Läufe ergeben höchstens drei Kurven; der beste Lauf stimmt mit `OptimizeResult.best_run` überein.
+
 ## Querschnittsaufgaben
 
 - CI aktuell halten, Integration gegen Mikroptim `main` grün halten; bei API-Änderungen in Mikroptim Wunschliste und Schnittstellendoku pflegen.

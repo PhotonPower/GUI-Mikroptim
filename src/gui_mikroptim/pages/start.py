@@ -59,7 +59,12 @@ st.subheader("Verzeichnisse")
 examples = cfg.example_systems_dir
 st.dataframe(
     [
-        {"Zweck": "Arbeitsbereich (schreiben)", "Pfad": str(cfg.workspace)},
+        {
+            "Zweck": "Sitzungsordner (schreiben)"
+            if cfg.sessions_root
+            else "Arbeitsbereich (schreiben)",
+            "Pfad": str(cfg.workspace),
+        },
         {
             "Zweck": "Mikroptim-Checkout",
             "Pfad": str(cfg.mikroptim_repo) if cfg.mikroptim_repo else "– (MKO_GUI_MIKROPTIM_REPO)",
@@ -72,6 +77,13 @@ st.dataframe(
     ],
     hide_index=True,
 )
+if cfg.sessions_root is not None:
+    st.info(
+        "Diese Sitzung hat einen eigenen Ordner für Uploads, Ergebnisse, Jobs und Glaskataloge. "
+        "Die Adresse im Browser (mit `?sitzung=…`) führt zu ihm zurück – als Lesezeichen "
+        f"speichern. Ordner ohne Zugriff und ohne laufenden Job werden nach {cfg.session_days:g} "
+        "Tagen gelöscht; wichtige Ergebnisse auf der Seite „Dateien“ herunterladen."
+    )
 if cfg.mikroptim_repo and not examples:
     st.warning(f"Unter {cfg.mikroptim_repo} gibt es kein Verzeichnis data/systems.")
 

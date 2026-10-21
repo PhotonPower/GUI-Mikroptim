@@ -76,14 +76,40 @@ def test_foreign_exceptions_pass_through(monkeypatch):
         optimize_run.run_optimize(object(), OptimizeOptions(), on_cycle)
 
 
-def test_merit_history_figure():
-    hist = [
-        {"Lauf": 0, "Zyklus": 1, "merit": 0.5, "Versuchsmerit": 0.5, "angenommen": True},
-        {"Lauf": 0, "Zyklus": 2, "merit": 0.5, "Versuchsmerit": 0.9, "angenommen": False},
-        {"Lauf": 1, "Zyklus": 1, "merit": 0.2, "Versuchsmerit": 0.2, "angenommen": True},
-    ]
-    fig = merit_history_figure(hist)
-    names = [t.name for t in fig.data]
-    assert names == ["Lauf 0", "Lauf 1", "abgelehnter Versuch"]
-    assert list(fig.data[1].x) == [3] and list(fig.data[2].y) == [0.9]
+def _history(runs: int, cycles: int = 3):
+    rows = []
+    for run in range(runs):
+        for i in range(1, cycles + 1):
+            merit = (run + 1) * 0.1 / i
+            rows.append({"Lauf": run, "Zyklus": i, "merit": merit, "Versuchsmerit": merit * 2,
+                         "angenommen": i != 2})  # fmt: skip
+    return rows
+
+
+def test_merit_history_few_runs_colored():
+    fig = merit_history_figure(_history(2))
+    assert [t.name for t in fig.data] == ["Lauf 0", "Lauf 1", "abgelehnter Versuch"]
+    assert list(fig.data[1].x) == [1, 2, 3]  # Läufe übereinander ab Zyklus 1
+    assert len(fig.data[2].x) == 2  # abgelehnte Versuche beider Läufe
     assert fig.layout.yaxis.type == "log"
+
+
+def test_merit_history_many_runs_stays_readable():
+    fig = merit_history_figure(_history(40))
+    names = [t.name for t in fig.data]
+    assert names == ["übrige 39 Läufe", "bester Lauf 0", "abgelehnter Versuch (bester Lauf)"]
+    grey = fig.data[0]
+    assert grey.x.count(None) == 39  # eine Kurve, Läufe durch Lücken getrennt
+    assert len(fig.data[2].x) == 1  # Kreuze nur für den besten Lauf
+
+
+def test_run_summary():
+    from gui_mikroptim.views.optimize_plots import best_run, final_merits, run_summary_figure
+
+    hist = _history(5)
+    assert final_merits(hist)[4] == pytest.approx(0.5 / 3)
+    assert best_run(hist) == 0
+    fig = run_summary_figure(hist)
+    assert list(fig.data[0].x) == [0, 1, 2, 3, 4]
+    assert fig.data[1].name == "bester Lauf 0" and fig.data[1].x == (0,)
+    assert best_run([]) is None

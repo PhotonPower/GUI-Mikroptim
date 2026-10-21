@@ -18,6 +18,7 @@ PAGES = [
     st.Page("pages/auswertung.py", title="Auswertung", icon=":material/insights:"),
     st.Page("pages/optimierung.py", title="Optimierung", icon=":material/tune:"),
     st.Page("pages/synthese.py", title="Jobs und Synthese", icon=":material/account_tree:"),
+    st.Page("pages/dateien.py", title="Dateien", icon=":material/download:"),
 ]
 
 navigation = st.navigation(PAGES)
