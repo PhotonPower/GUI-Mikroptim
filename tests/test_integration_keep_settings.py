@@ -72,6 +72,9 @@ def test_psf_settings_kept(at):
 @needs_uploader
 def test_optimization_settings_kept(at):
     at.switch_page("pages/optimierung.py").run()
+    # ein System mit Variablen (der Mehrlinser hat keine und bietet keine Optionen an)
+    box = at.selectbox(key=f"optimierung.datei.{EXAMPLES}")
+    box.select_index(box.options.index("einzellinse_bk7_variablen.json")).run()
     at.number_input(key="optimierung.zyklen").set_value(20).run()
     at.number_input(key="optimierung.laeufe").set_value(3).run()
     at.number_input(key="optimierung.seed").set_value(7).run()

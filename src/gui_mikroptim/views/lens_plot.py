@@ -271,9 +271,13 @@ def lens_figure(
         margin = 0.15 * max(z_max_surface - z_min, 2 * max_h)
         right = z_max_surface + margin
         fig.update_xaxes(range=[z_min - margin, right])
+        # am rechten Rand des Diagramms (Papierkoordinaten): Bei Maßstab 1:1 verbreitert Plotly
+        # die z-Achse über ``right`` hinaus, ein Anker in z läge sonst mitten im System
         fig.add_annotation(
-            x=right,
-            y=0,
+            x=1.0,
+            y=0.5,
+            xref="paper",
+            yref="paper",
             xanchor="right",
             yanchor="bottom",
             text=f"Bildebene bei z = {geometry.image_z:g} mm →",

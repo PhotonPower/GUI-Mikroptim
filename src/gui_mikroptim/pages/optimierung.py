@@ -25,7 +25,8 @@ if entry is not None:
         st.caption("Details und Reparatur auf der Seite „System“.")
     else:
         st.subheader(system.name or entry.path.stem)
-        optimize_view.variables_section(system)
+        if not optimize_view.variables_section(system):
+            st.stop()
         st.markdown("**Optionen**")
         options = optimize_view.options_form(status)
         optimize_view.command_caption(entry, options)

@@ -4,6 +4,10 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionier
 
 ## [Unreleased]
 
+### Behoben
+- Seite „Optimierung“: Systeme ohne Abschnitt `variables` (z. B. `einzellinse_bk7.json`, `testsystem_mehrlinser.json`) boten „Optimierung starten“ an, und erst der Klick lieferte Mikroptims `ValueError: keine Variablen …`. Jetzt erklärt die Seite, warum das System nicht optimierbar ist, nennt Beispiele mit Variablen und zeigt weder Optionen noch Start (Befund vom Server, 2026-10-21).
+- Linsenschnitt: Der Hinweis „Bildebene bei z = … mm →“ lag bei beschnittenem Bildraum mitten im System, weil Plotly die z-Achse wegen des Maßstabs 1:1 verbreitert; er sitzt jetzt am rechten Rand des Diagramms.
+
 ### Geändert
 - Dateiwähler mit `remember` setzen das aktuelle System nur noch, wenn sich ihre Auswahl ändert (vorher überschrieb z. B. der Startsystem-Wähler ein per „Ergebnis übernehmen“ gesetztes System).
 - Mindestversion Streamlit 1.51 (Breitenangabe `width="stretch"` bei `st.plotly_chart`, `st.dataframe`, `st.graphviz_chart`; `use_container_width` ist in Streamlit abgekündigt).
