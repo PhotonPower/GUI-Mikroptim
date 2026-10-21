@@ -97,7 +97,7 @@ def test_merit_history_few_runs_colored():
 def test_merit_history_many_runs_stays_readable():
     fig = merit_history_figure(_history(40))
     names = [t.name for t in fig.data]
-    assert names == ["übrige 39 Läufe", "bester Lauf 0", "abgelehnter Versuch (bester Lauf)"]
+    assert names == ["übrige Läufe (39)", "bester Lauf 0", "abgelehnter Versuch (bester Lauf)"]
     grey = fig.data[0]
     assert grey.x.count(None) == 39  # eine Kurve, Läufe durch Lücken getrennt
     assert len(fig.data[2].x) == 1  # Kreuze nur für den besten Lauf
@@ -113,3 +113,75 @@ def test_run_summary():
     assert list(fig.data[0].x) == [0, 1, 2, 3, 4]
     assert fig.data[1].name == "bester Lauf 0" and fig.data[1].x == (0,)
     assert best_run([]) is None
+
+
+def _penalty_history():
+    """Lauf 0: zwei Strafrunden, endet ohne versagte Strahlen; Lauf 1: endet mit versagten."""
+    rows = []
+    for i, (merit, failed) in enumerate([(1e4, 5), (5e3, 5), (5e4, 2), (2e2, 0), (1.0, 0)], 1):
+        rows.append({"Lauf": 0, "Zyklus": i, "merit": merit, "Versuchsmerit": merit,
+                     "angenommen": True, "versagt": failed})  # fmt: skip
+    for i, (merit, failed) in enumerate([(1e4, 9), (1e5, 9), (1e9, 9), (1e12, 9)], 1):
+        rows.append({"Lauf": 1, "Zyklus": i, "merit": merit, "Versuchsmerit": merit,
+                     "angenommen": True, "versagt": failed})  # fmt: skip
+    for run in (2, 3, 4):
+        for i in range(1, 4):
+            rows.append({"Lauf": run, "Zyklus": i, "merit": 10.0 / i, "Versuchsmerit": 10.0 / i,
+                         "angenommen": True, "versagt": 0})  # fmt: skip
+    return rows
+
+
+def test_restarts_and_failed_runs():
+    from gui_mikroptim.views import optimize_plots as op
+
+    hist = _penalty_history()
+    runs = op.runs_of(hist)
+    assert op.restart_indices(runs[0]) == [2]  # Merit steigt: neue Strafrunde
+    assert op.restart_indices(runs[1]) == [1, 2, 3]
+    assert not op.ends_with_failed_rays(runs[0]) and op.ends_with_failed_rays(runs[1])
+    # bester Lauf nur unter Läufen ohne versagte Strahlen, Mikroptims Wahl hat Vorrang
+    assert op.best_run(hist) == 0
+    assert op.best_run(hist, preferred=3) == 3
+    fig = op.merit_history_figure(hist)
+    names = [t.name for t in fig.data]
+    assert names[:3] == [
+        "übrige Läufe (3)",
+        "Läufe mit versagten Strahlen am Ende (1)",
+        "bester Lauf 0",
+    ]
+    assert "Neustart: Strafgewicht × 10" in names
+    restart = next(t for t in fig.data if t.name.startswith("Neustart"))
+    assert list(restart.x) == [3]  # nur für den besten Lauf
+    # y-Bereich nach den gültigen Läufen: 1e12 des versagten Laufs liegt außerhalb
+    low, high = fig.layout.yaxis.range
+    assert low < 0 < high < 12
+
+
+def test_run_summary_marks_failed_runs():
+    from gui_mikroptim.views import optimize_plots as op
+
+    hist = _penalty_history()
+    info = [{"run": 0, "merit": 1.0, "failed_rays": 0, "penalty_rounds": 2},
+            {"run": 1, "merit": 1e12, "failed_rays": 9, "penalty_rounds": 9}]  # fmt: skip
+    fig = op.run_summary_figure(hist, best=0, runs_info=info)
+    names = [t.name for t in fig.data]
+    assert names == [
+        "ohne versagte Strahlen",
+        "mit versagten Strahlen (Merit mit Strafe)",
+        "bester Lauf 0",
+    ]
+    hollow = fig.data[1]
+    assert list(hollow.x) == [1] and hollow.marker.symbol == "circle-open"
+    assert list(hollow.customdata[0]) == [9, 9]
+
+
+def test_restarts_exact_with_round_count():
+    from gui_mikroptim.views import optimize_plots as op
+
+    # drei volle Runden à 3 Zyklen; der Neustart bei Zyklus 7 senkt die Merit sofort
+    merits = [9.0, 8.0, 7.0, 70.0, 60.0, 50.0, 40.0, 30.0, 20.0]
+    rows = [{"Lauf": 0, "Zyklus": i + 1, "merit": m, "angenommen": True, "versagt": 0}
+            for i, m in enumerate(merits)]  # fmt: skip
+    assert op.restart_indices(rows) == [3]  # nur der Anstieg ist sichtbar
+    assert op.restart_indices(rows, cycles_per_round=3, rounds=3) == [3, 6]  # exakt
+    assert op.restart_indices(rows, cycles_per_round=4, rounds=3) == [3]  # nicht voll: Anstieg

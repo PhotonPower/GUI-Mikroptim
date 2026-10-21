@@ -4,6 +4,9 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionier
 
 ## [Unreleased]
 
+### Behoben
+- Optimierung, Strafrunden beim weichen Strahlversagen: „Zyklen pro Lauf“ hieß falsch – Mikroptims `max_iterations` gilt pro Strafrunde, ein Lauf mit versagten Strahlen rechnet mit zehnfachem Strafgewicht weiter (bei 100 Zyklen bis zu 900); jetzt „Zyklen pro Runde“ mit Erklärung. Der Verlauf markiert Neustarts (▲, exakt aus `penalty_rounds` bei vollen Runden), trennt Läufe mit versagten Strahlen am Ende (gestrichelt; hohl in „Endmerit pro Lauf“), richtet die Merit-Achse nach den gültigen Läufen und übernimmt den besten Lauf von Mikroptim (`best_run`); ein Hinweis erklärt die Sprünge der Merit. Wunsch W10 an Mikroptim (Runde im Rückruf). Befund vom Server, 2026-10-21.
+
 ### Hinzugefügt
 - G6-T1: Sitzungsordner (ADR-0007): Mit `MKO_GUI_SESSIONS` arbeitet jede Sitzung in `<MKO_GUI_SESSIONS>/<kennung>/` (`uploads/`, `ergebnisse/`, `jobs/`, `kataloge/`); Kennung zufällig und in der Adresse (`?sitzung=…`), Neuladen und Lesezeichen behalten den Ordner; gemeinsame Warteschlange der Jobs über alle Sitzungen; alte Ordner ohne laufende Jobs werden nach `MKO_GUI_SESSION_DAYS` (Standard 14) gelöscht (`backend/sessions.py`).
 - G6-T2: Herunterladen: Seite „Dateien“ (alle Dateien der Sitzung, ZIP der Auswahl, einzelne Datei; Verweis in der Seitenleiste), „Herunterladen“ des optimierten Systems ohne Speichern, „Jobordner als ZIP“; heruntergeladene Systemdateien mit übertragbaren Katalogpfaden (`export.system_download`), Zuordnung zusätzlich über Mikroptims `data/glass/` nach Dateiname.
