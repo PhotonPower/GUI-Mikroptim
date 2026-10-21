@@ -51,7 +51,7 @@ Alle Einstellungen über Umgebungsvariablen (`gui_mikroptim/config.py`):
 
 | Variable | Standard | Bedeutung |
 |---|---|---|
-| `MKO_GUI_WORKSPACE` | `arbeitsbereich/` im Checkout | Einziges Verzeichnis, in das die GUI schreibt (`uploads/`, `ergebnisse/`, `jobs/`). Auf dem Server außerhalb des Checkouts, z. B. `~/gui-mikroptim-daten`. |
+| `MKO_GUI_WORKSPACE` | `arbeitsbereich/` im Checkout | Einziges Verzeichnis, in das die GUI schreibt (`uploads/`, `ergebnisse/`, `jobs/`, `kataloge/` für hochgeladene Glaskataloge, ADR-0006). Auf dem Server außerhalb des Checkouts, z. B. `~/gui-mikroptim-daten`. |
 | `MKO_GUI_MIKROPTIM_REPO` | – | Mikroptim-Checkout; liefert die Beispielsysteme (`data/systems`) und Glaskataloge. Wird nur gelesen. |
 | `MKO_GUI_CLI` | – | Programm `mikroptim` für Jobs (Pfad oder Name im `PATH`); ohne: `python -m mikroptim` |
 | `MKO_GUI_MAX_JOBS` | `1` | höchstens gleichzeitig laufende Jobs |

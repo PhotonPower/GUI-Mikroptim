@@ -55,6 +55,12 @@ Erledigt mit dem ersten Commit: Paket und Startprogramm, Konfiguration, `backend
   - Funktion ist ohne Streamlit getestet: Planplatte ergibt Rechtecke, Bikonvexlinse die erwarteten Scheitel- und Randpunkte (Pfeilhöhe gegen geschlossene Formel).
   - Seitenverhältnis 1, Achsen in mm, Screenshot von `testsystem_mehrlinser.json` und `testsystem_mehrlinser_dezentriert.json` im PR.
 
+### G1-T4 – Glaskataloge hochladen ✅
+- **Abhängig von:** G1-T2
+- **Anlass:** Nutzer ohne Serverzugang konnten eigene Glaskataloge (z. B. Schott-Daten für ein Patentsystem) nicht bereitstellen (2026-10-21).
+- **Inhalt:** Bereich „Glaskataloge“ auf der Seite „System“ (Upload, Prüfung durch Mikroptim, Liste, Löschen); Zuordnung fehlender Katalogeinträge zum Mikroptim-Checkout und zu `kataloge/` (ADR-0006).
+- **Abnahme:** Integrationstest: Katalog hochladen, Systemdatei mit Katalogen aus Checkout und Arbeitsbereich hochladen, zuordnen, rechnen; fehlender Katalog wird benannt; abgelehnte Kataloge werden nicht gespeichert.
+
 ---
 
 ## G2 – Auswertung ✅

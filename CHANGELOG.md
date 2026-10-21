@@ -4,6 +4,9 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionier
 
 ## [Unreleased]
 
+### Hinzugefügt
+- G1-T4: Glaskataloge hochladen (ADR-0006): Bereich „Glaskataloge“ auf der Seite „System“ mit Liste, Upload (Aufbau geprüft, dann von Mikroptim mit einem Prüfsystem geladen; abgelehnte Kataloge werden nicht gespeichert), Hinweis auf Gläser, die auch in Mikroptims Katalogen stehen, und Löschen mit Bestätigung; Ablage unter `kataloge/` im Arbeitsbereich (`backend/catalogs.py`, `views/catalog_view.py`). Fehlende Katalogeinträge einer Systemdatei ordnet die GUI dem Mikroptim-Checkout und den hochgeladenen Katalogen zu (Tabelle „gefunden: Datei/Mikroptim/Arbeitsbereich/fehlt“), „Glaskataloge zuordnen und neu speichern“ lässt Mikroptim die Datei damit laden und neu schreiben. Wunsch W9 an Mikroptim (Suchpfad für Kataloge).
+
 ### Behoben
 - Seite „Optimierung“: Systeme ohne Abschnitt `variables` (z. B. `einzellinse_bk7.json`, `testsystem_mehrlinser.json`) boten „Optimierung starten“ an, und erst der Klick lieferte Mikroptims `ValueError: keine Variablen …`. Jetzt erklärt die Seite, warum das System nicht optimierbar ist, nennt Beispiele mit Variablen und zeigt weder Optionen noch Start (Befund vom Server, 2026-10-21).
 - Linsenschnitt: Der Hinweis „Bildebene bei z = … mm →“ lag bei beschnittenem Bildraum mitten im System, weil Plotly die z-Achse wegen des Maßstabs 1:1 verbreitert; er sitzt jetzt am rechten Rand des Diagramms.

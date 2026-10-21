@@ -45,11 +45,15 @@ Ist Mikroptim installiert, lädt die Seite die gewählte Datei mit `mikroptim.lo
 
 Fehler beim Laden erscheinen rot mit dem JSON-Pfad, an dem Mikroptim den Fehler gefunden hat, z. B. ``FormatError (JSON-Pfad `surfaces[1].curvature`)``. Ohne Mikroptim zeigt die Seite nur die Kopfdaten aus der Datei.
 
+### Glaskataloge hochladen (G1-T4)
+
+Eigene Glaskataloge – z. B. Herstellerdaten, die nicht ins Mikroptim-Repository dürfen – lädt man im aufklappbaren Bereich **„Glaskataloge“** auf der Seite „System“ hoch (Format `mikroptim.glass/1`, Mikroptim docs/dateiformat.md, „Glasdaten“). Die GUI prüft den Aufbau und lässt Mikroptim den Katalog laden; abgelehnte Kataloge werden nicht gespeichert, die Meldung nennt den Grund. Gespeichert wird unter `kataloge/` im Arbeitsbereich mit unverändertem Dateinamen, denn Systemdateien finden Kataloge über ihn (`data/glass/private/schott.json` → `kataloge/schott.json`). Ein vorhandener Katalog gleichen Namens wird nicht überschrieben; „Katalog löschen“ (mit Bestätigung) macht den Namen frei. Steht ein Glas auch in einem Katalog von Mikroptim (z. B. N-BK7), weist die GUI darauf hin: Ein System, das beide Kataloge nennt, lädt Mikroptim nicht.
+
 ### Glaskataloge hochgeladener Dateien
 
 Mikroptim sucht die Pfade unter `glass_catalogs` vom Verzeichnis der Systemdatei aus aufwärts. Eine hochgeladene Kopie eines Beispielsystems mit `data/glass/basis.json` findet ihren Katalog im Arbeitsbereich deshalb nicht; die Seite meldet den Fehler mit JSON-Pfad `glass_catalogs[…]`.
 
-Dann erscheint der Knopf **„Mit Glaskatalogen aus dem Mikroptim-Checkout neu speichern“** (nur mit `MKO_GUI_MIKROPTIM_REPO`). Mikroptim lädt die Datei mit Katalogsuche ab dem Checkout (`System.from_json`) und speichert sie als `uploads/<name>-kataloge.json` (`System.save`). Dabei passt Mikroptim nur die Einträge unter `glass_catalogs` an den neuen Ort an, alles andere bleibt gleich; die neue Datei ist sofort ausgewählt, die ursprüngliche bleibt unverändert. Die neuen Pfade sind relativ zur neuen Datei (z. B. `../../src/Mikroptim/data/glass/basis.json`): Verschiebt man Arbeitsbereich oder Checkout, muss man neu speichern.
+Dann zeigt die Seite für jeden Eintrag, wo die GUI ihn gefunden hat: „Datei“ (wie Mikroptim), „Mikroptim“ (im Checkout, `MKO_GUI_MIKROPTIM_REPO`), „Arbeitsbereich“ (hochgeladener Katalog gleichen Dateinamens) oder „fehlt“ – dann nennt ein Hinweis die Datei, die unter „Glaskataloge“ hochzuladen ist. Sind alle gefunden, erscheint **„Glaskataloge zuordnen und neu speichern“**: Mikroptim lädt die Datei mit diesen Katalogen (`System.from_json`) und speichert sie als `uploads/<name>-kataloge.json` (`System.save`). Dabei passt Mikroptim nur die Einträge unter `glass_catalogs` an den neuen Ort an, alles andere bleibt gleich; die neue Datei ist sofort ausgewählt, die ursprüngliche bleibt unverändert. Die neuen Pfade sind relativ zur neuen Datei (z. B. `../../src/Mikroptim/data/glass/basis.json`): Verschiebt man Arbeitsbereich oder Checkout, muss man neu speichern.
 
 ### Linsenschnitt (G1-T3)
 
