@@ -36,6 +36,10 @@ def system_sources(cfg: Settings) -> list[Source]:
     result.append(Source("Uploads", cfg.workspace / uploads.UPLOAD_SUBDIR))
     result.append(Source("Ergebnisse", cfg.workspace / "ergebnisse"))
     result.append(Source("Jobergebnisse", cfg.workspace / "jobs"))
+    if cfg.mikroptim_repo is not None and (cfg.mikroptim_repo / "docs" / "ergebnisse").is_dir():
+        result.append(
+            Source("Mikroptim: docs/ergebnisse", cfg.mikroptim_repo / "docs" / "ergebnisse")
+        )
     return result
 
 

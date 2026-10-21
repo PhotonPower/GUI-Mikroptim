@@ -68,7 +68,7 @@ def _command(at) -> str:
 @needs_uploader
 def test_form_produces_expected_arguments(app_file, workspace, repo):
     at = _page(app_file)
-    table = at.dataframe[0].value
+    table = next(d.value for d in at.dataframe if "Name" in d.value.columns)
     assert list(table["Name"]) == ["c[1]", "c[2]", "w"]
     assert _command(at) == f"Entspricht: `mikroptim optimize {NAME} --json `"
     assert at.number_input(key="optimierung.seed").disabled  # nur mit Multistart

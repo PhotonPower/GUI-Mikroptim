@@ -10,7 +10,7 @@ Zeigt, ob Mikroptim geladen werden kann (Version, CPU- oder CUDA-Build, GPUs mit
 
 ### Datei wählen und hochladen (G1-T1)
 
-1. **Quelle:** „Beispielsysteme (Mikroptim)“ (`data/systems` im Checkout, nur mit `MKO_GUI_MIKROPTIM_REPO`), „Uploads“, „Ergebnisse“ oder „Jobergebnisse“ (Jobordner, z. B. `ergebnis.json` einer Synthese) im Arbeitsbereich. Angeboten werden nur Systemdateien (`mikroptim.system/1`); Glaskataloge und andere Formate im selben Ordner erscheinen nicht.
+1. **Quelle:** „Beispielsysteme (Mikroptim)“ (`data/systems` im Checkout, nur mit `MKO_GUI_MIKROPTIM_REPO`), „Uploads“, „Ergebnisse“ oder „Jobergebnisse“ (Jobordner, z. B. `ergebnis.json` einer Synthese) im Arbeitsbereich sowie „Mikroptim: docs/ergebnisse“ (Ergebnisse dokumentierter Läufe, z. B. M6-T6). Angeboten werden nur Systemdateien (`mikroptim.system/1`); Glaskataloge und andere Formate im selben Ordner erscheinen nicht.
 2. **Datei:** Die Auswahl gilt als **aktuelles System** für alle Seiten und steht in der Seitenleiste. Beim nächsten Besuch der Seite ist sie wieder ausgewählt.
 3. **Hochladen:** unter „Datei hochladen“ eine `.json`-Datei wählen. Sie wird geprüft (JSON, Feld `format`, Systembeschreibung in Hauptversion 1, höchstens 20 MB, UTF-8) und unter `uploads/` gespeichert. Ein vorhandener Name wird nie überschrieben: Die zweite `linse.json` heißt `linse-2.json`. Nach dem Speichern ist die neue Datei sofort ausgewählt. Abgelehnte Dateien werden nicht gespeichert; die Meldung nennt den Grund.
 
@@ -137,6 +137,18 @@ Zeigt Protokolle von `mikroptim synth … --log datei.json` (Format `mikroptim.s
 6. **Ziel-Tupel** (wenn vorhanden) und, aufklappbar, die Optionen des Laufs und das Ergebnis als JSON.
 
 Die GUI rechnet dabei nichts nach: Alle Werte stehen so im Protokoll. `null` im Protokoll (nicht endliche Zahl) erscheint als Lücke bzw. „–“.
+
+### Reiter „Ergebnisordner“ (G4-T4)
+
+Zeigt einen ganzen Lauf mit allen Stufen, z. B. `docs/ergebnisse/m6-t6/` in Mikroptim.
+
+- **Ordner:** Unterordner von `docs/ergebnisse` im Mikroptim-Checkout, die Mikroptim-Dateien enthalten, die Jobordner und `ergebnisse/` im Arbeitsbereich. „Neu einlesen“ liest den Ordner erneut (sonst 30 s zwischengespeichert).
+- **Überblick:** Zahl der Systeme, Synthese-Protokolle, Auswertungen (`mikroptim eval --json`), Textausgaben und JSON-Dateien ohne Mikroptim-Format (z. B. eigene Laufdateien eines Skripts). Liegt im Ordner ein `README.md`/`bericht.md` oder daneben eine Markdown-Datei, die mit dem Ordnernamen beginnt (`m6-t6-zielspezifikation.md`), ist sie aufklappbar als **Bericht** dabei.
+- **Stufen:** Die Dateien werden nach dem Kürzel am Anfang des Namens gegliedert (`p1`, `p2`, …, `a3`, `z2`; natürlich sortiert), mit der Zahl der Dateien je Art.
+- **Systeme:** Tabelle (Name, Flächen, Felder, Wellenlängen, Geisterplatten) und für das gewählte System: „Als aktuelles System“, „Auf ‚System‘ ansehen“, „Auswerten“ und „Mit aktuellem System vergleichen“ (öffnet „Auswertung“ mit dem gewählten System als B im Reiter „Vergleich“).
+- **Synthese-Protokolle:** Tabelle (Status, NA und Feld am Ende, Elemente, Einfügungen, Optimierungen, Laufzeit) und das gewählte Protokoll aufklappbar wie im Reiter „Protokolle“.
+- **Auswertungen:** Tabelle mit Raster, Referenzsphäre, PSF-Modell, Zahl der Tupel, größtem und kleinstem RMS-OPD, kleinstem und größtem Strehl und versagten Strahlen – Werte aus den Dateien.
+- **Weitere Dateien:** Textausgaben, JSON ohne Format und Stammbäume (DOT) zum Ansehen.
 
 ### Reiter „Neue Synthese“ (G4-T3)
 
