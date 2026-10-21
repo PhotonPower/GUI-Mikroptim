@@ -7,6 +7,8 @@ import math
 import numpy as np
 import plotly.graph_objects as go
 
+from gui_mikroptim.views.display_limits import reduce_grid, thin_points
+
 #: divergierende Skala für OPD (blau negativ, rot positiv), symmetrisch um 0
 OPD_COLORSCALE = "RdBu_r"
 #: ab dieser Punktzahl zeichnet das Spotdiagramm mit WebGL
@@ -35,14 +37,16 @@ def opd_figure(opd_waves: np.ndarray, title: str | None = None) -> go.Figure:
     """
     opd = np.asarray(opd_waves, dtype=float)
     grid = opd.shape[0]
-    axis = pupil_axis(grid)
-    half = symmetric_range(opd)
+    half = symmetric_range(opd)  # Farbskala aus den vollen Daten
     z = np.where(np.isfinite(opd), opd, np.nan)
+    z, ax_x, ax_y, k = reduce_grid(z, pupil_axis(grid), pupil_axis(grid), "mean")
+    if k > 1:
+        title = f"{title or 'OPD'} (Anzeige: Mittel über {k} × {k} Rasterpunkte)"
     fig = go.Figure(
         go.Heatmap(
             z=z,
-            x=axis,
-            y=axis,
+            x=ax_x,
+            y=ax_y,
             colorscale=OPD_COLORSCALE,
             zmin=-half,
             zmax=half,
@@ -76,11 +80,14 @@ def spot_figure(
     x = np.asarray(x_mm, dtype=float) * 1e3
     y = np.asarray(y_mm, dtype=float) * 1e3
     ok = np.isfinite(x) & np.isfinite(y)
+    shown_x, shown_y, k = thin_points(x[ok], y[ok])
+    if k > 1:
+        title = f"{title or 'Spotdiagramm'} (Anzeige: jeder {k}. von {int(ok.sum())} Punkten)"
     scatter = go.Scattergl if int(ok.sum()) >= SCATTERGL_FROM else go.Scatter
     fig = go.Figure(
         scatter(
-            x=x[ok],
-            y=y[ok],
+            x=shown_x,
+            y=shown_y,
             mode="markers",
             marker={"size": 3, "color": "#2f6690", "opacity": 0.6},
             name="Durchstoßpunkte",
