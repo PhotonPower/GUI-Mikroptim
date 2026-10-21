@@ -119,6 +119,8 @@ Braucht Mikroptim. Dateiauswahl wie auf „System“, vorausgewählt das aktuell
 
 ### Variablen und Optionen (G3-T1)
 
+Hat ein System keinen Abschnitt `variables`, kann Mikroptim es nicht optimieren; die Seite sagt das, nennt Beispielsysteme mit Variablen und zeigt keine Optionen.
+
 - **Variablen** aus `System.variables()`: Name, Typ, Fläche bzw. Geisterplatte, Ordnung, Wert, untere und obere Schranke, typische Größe. Kann Mikroptim sie nicht auflösen (Glasvariablen auf Katalog-Gläsern werden erst beim Start der Optimierung umgewandelt), stehen dort ein Hinweis und der Abschnitt `variables` der Datei. Nebenbedingungen aufklappbar.
 - **Optionen** wie `mikroptim optimize`, mit denselben Standardwerten: Zyklen pro Lauf (100; 0 wertet nur den Startpunkt aus), Ringe und Speichen (10 × 8), Jacobi-Matrix `fd` oder `adjoint`, Läufe für den Multistart (1), relative Störung (0,05) und Seed (0) – beide nur mit mindestens 2 Läufen einstellbar –, hartes Strahlversagen, eigenes Strafgewicht w_fail (nur beim weichen Strahlversagen), GPU und Gerät nur mit CUDA-Build und Gerät.
 - Darunter steht der entsprechende Befehl `mikroptim optimize … --json` mit genau diesen Optionen (nur Abweichungen vom Standard).

@@ -163,7 +163,8 @@ def test_cropped_image_space():
     assert lp.image_space_is_long(g)
     fig = lp.lens_figure(g, full_image_space=False)
     assert fig.layout.xaxis.range[1] < g.image_z
-    assert any("Bildebene bei z = 55 mm" in a.text for a in fig.layout.annotations)
+    note = next(a for a in fig.layout.annotations if "Bildebene bei z = 55 mm" in a.text)
+    assert (note.xref, note.x, note.xanchor) == ("paper", 1.0, "right")  # am Diagrammrand
     assert lp.lens_figure(g).layout.xaxis.range is None
 
 

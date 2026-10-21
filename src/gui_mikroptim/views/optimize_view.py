@@ -15,7 +15,8 @@ from gui_mikroptim.views.wavefront_view import gpu_inputs
 KEY = "optimierung"
 
 
-def variables_section(system: Any) -> None:
+def variables_section(system: Any) -> bool:
+    """Variablen anzeigen; ``False``, wenn das System keine hat (dann nicht optimierbar)."""
     info = compute.details(system)
     st.markdown("**Variablen**")
     if info.variables_error:
@@ -26,13 +27,21 @@ def variables_section(system: Any) -> None:
         )
         st.json(info.data.get("variables") or {})
     elif not info.variables:
-        st.info("Das System hat keine Variablen; eine Optimierung ändert nichts.")
+        st.info(
+            "Dieses System hat keinen Abschnitt `variables`; Mikroptim kann es deshalb nicht "
+            "optimieren (`mikroptim optimize` meldet „keine Variablen“). Ein System mit Variablen "
+            "wählen, z. B. `einzellinse_bk7_variablen.json` oder `einzellinse_bk7_biegung.json` "
+            "aus den Beispielsystemen, oder Variablen in der Datei ergänzen (Mikroptim, "
+            "docs/dateiformat.md, Abschnitt „Variablen“)."
+        )
+        return False
     else:
         st.dataframe(system_tables.variable_rows(info.variables), hide_index=True, width="stretch")
     constraints = info.data.get("constraints")
     if constraints:
         with st.expander("Nebenbedingungen"):
             st.json(constraints)
+    return True
 
 
 def options_form(status: mko.MikroptimStatus) -> OptimizeOptions:
